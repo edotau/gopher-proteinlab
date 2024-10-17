@@ -1,0 +1,48 @@
+name: Golang DevOps
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+env:
+  GOLANG: 1.22.2
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GOLANG }}
+      - name: Setup golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
+      - name: Setup yaml formatter
+        run: go install github.com/google/yamlfmt/cmd/yamlfmt@v0.13.0
+      - name: Perform lint checks
+        run: make lint
+  git-actions:
+    needs: lint
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GOLANG }}
+      # Cache Go modules
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ env.GOLANG }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ env.GOLANG }}-
+      - name: Install golang dependencies
+        run: make install
+      - name: Test repository
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: make test
