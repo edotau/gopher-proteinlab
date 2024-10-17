@@ -29,12 +29,10 @@ func TestCatchError(t *testing.T) {
 }
 
 func TestThrowError(t *testing.T) {
-	// Capture log output
-	var logOutput strings.Builder
+	var logOutput strings.Builder // Capture log output
 	log.SetOutput(&logOutput)
+	err := ThrowError(nil) // Test case where error is nil
 
-	// Test case where error is nil
-	err := ThrowError(nil)
 	if !err {
 		t.Errorf("Expected true for nil error, got false")
 	}
@@ -43,7 +41,6 @@ func TestThrowError(t *testing.T) {
 	}
 
 	logOutput.Reset()
-
 	testErr := fmt.Errorf("test error")
 	err = ThrowError(testErr)
 
@@ -54,5 +51,14 @@ func TestThrowError(t *testing.T) {
 
 	if !strings.Contains(logOutput.String(), expectedLog) {
 		t.Errorf("Expected log output to contain %q, got %s", expectedLog, logOutput.String())
+	}
+}
+
+func TestHandleStrBuilder(t *testing.T) {
+	var buffer strings.Builder
+	HandleStrBuilder(&buffer, "test")
+	expected := "test"
+	if buffer.String() != expected {
+		t.Errorf("Expected %q, got %q", expected, buffer.String())
 	}
 }

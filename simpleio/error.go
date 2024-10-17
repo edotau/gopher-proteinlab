@@ -2,6 +2,7 @@ package simpleio
 
 import (
 	"log"
+	"strings"
 )
 
 // CatchError will panic if input error is not nil.
@@ -18,4 +19,9 @@ func ThrowError(err error) bool {
 		log.Printf("Warning: %s", err)
 	}
 	return err == nil
+}
+
+func HandleStrBuilder(buffer *strings.Builder, text string) {
+	_, err := buffer.WriteString(text)
+	CatchError(err)
 }
