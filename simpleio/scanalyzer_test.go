@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 )
+
 func TestScanalyzer(t *testing.T) {
 	file := FileHandler("testdata/uniprot-test.dat.gz")
-	
+
 	scanner := NewScannerio(bufio.NewReader(file), file)
 	if err := scanner.Close(); err != nil {
 		t.Errorf("Error: Expected scanner.Close() with no error. %v", err)
@@ -42,5 +43,5 @@ func TestNewScannerio(t *testing.T) {
 			t.Errorf("Error: NewScannerio() is not parsing the lines correctly.'n")
 		}
 	}
-	
+
 }

@@ -9,6 +9,8 @@ linters-settings:
     all: true
   gosimple:
     checks: ["-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1022"]
+  gosec:
+    checks: ["G101"]
   misspell:
     locale: US
 linters:
@@ -18,3 +20,11 @@ linters:
     - asciicheck
     - gofmt
     - gosimple
+    - goimports
+    - gci
+    - gosec
+    - ineffassign
+    - prealloc
+    - predeclared
+    - tagalign
+    - usestdlibvars
