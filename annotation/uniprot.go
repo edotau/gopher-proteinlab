@@ -2,9 +2,9 @@ package annotation
 
 import (
 	"encoding/xml"
-	"fmt"
-	"gopher-proteinlab/simpleio"
 	"io"
+
+	"gopher-proteinlab/parseio"
 )
 
 type UniProtXML struct {
@@ -14,7 +14,7 @@ type UniProtXML struct {
 
 // // UniProtXMLReader reads a UniProt XML file, decodes the XML content, and returns the parsed data.
 // func UniProtXMLReader(filename string) {
-// 	xmlFile := simpleio.SimpleOpen(filename)
+// 	xmlFile := parseio.SimpleOpen(filename)
 // 	defer xmlFile.Close()
 
 // 	decoder := xml.NewDecoder(xmlFile)
@@ -26,25 +26,16 @@ type UniProtXML struct {
 // }
 
 // UniProtXMLReader reads a UniProt XML file, decodes the XML content, and returns the parsed data.
-func UniProtXMLReader(filename string) error {
-	xmlReader, xmlFile := simpleio.FileHandler(filename)
+func UniProtXMLReader(filename string) {
+	xmlReader, xmlFile := parseio.FileHandler(filename)
 	defer xmlFile.Close()
-
 	decoder := xml.NewDecoder(xmlReader)
 
 	// Iterate through the tokens in the XML file
-	for {
-		entry, err := parseUniProt(decoder)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("error parsing UniProt XML: %v", err)
-		}
-		fmt.Println(entry.ToString())
+	for _, err := parseUniProt(decoder); err != io.EOF; _, err = parseUniProt(decoder) {
+		// parseio.ExitOnError(err)
+		// fmt.Println(entry)
 	}
-
-	return nil
 }
 
 func parseUniProt(decoder *xml.Decoder) (*Entry, error) {

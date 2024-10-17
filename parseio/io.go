@@ -1,4 +1,4 @@
-package simpleio
+package parseio
 
 import (
 	"bufio"
@@ -11,7 +11,7 @@ import (
 
 // SimpleOpen opens a file and returns the file handle.
 func SimpleOpen(filename string) *os.File {
-	if file, err := os.Open(filename); CatchError(err) {
+	if file, err := os.Open(filename); ExitOnError(err) {
 		return file
 	}
 	return nil
@@ -30,7 +30,7 @@ func FileHandler(filename string) (*bufio.Reader, *os.File) {
 
 // NewGunzip is a helper function to define a pgzip.Reader{} and handles and errors.
 func NewGunzip(reader io.Reader) *pgzip.Reader {
-	if gunzip, err := pgzip.NewReader(reader); CatchError(err) {
+	if gunzip, err := pgzip.NewReader(reader); ExitOnError(err) {
 		return gunzip
 	}
 	return nil
@@ -38,7 +38,7 @@ func NewGunzip(reader io.Reader) *pgzip.Reader {
 
 // IsGzip checks if the file is gzip-compressed by peeking at its magic number
 func IsGzip(reader *bufio.Reader) bool {
-	if buffer, err := reader.Peek(2); CatchError(err) {
+	if buffer, err := reader.Peek(2); ExitOnError(err) {
 		return bytes.Equal(buffer, []byte{0x1f, 0x8b})
 	}
 	return false

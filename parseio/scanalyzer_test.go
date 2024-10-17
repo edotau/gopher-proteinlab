@@ -1,4 +1,4 @@
-package simpleio
+package parseio
 
 import (
 	"os"
@@ -14,10 +14,10 @@ func TestScanalyzer(t *testing.T) {
 
 func TestNewScannerio(t *testing.T) {
 	var lines []string
-	if tmpfile, err := os.Create("testdata/lines.txt"); CatchError(err) {
+	if tmpfile, err := os.Create("testdata/lines.txt"); ExitOnError(err) {
 		defer os.Remove(tmpfile.Name())
 
-		if _, err = tmpfile.WriteString("line1\nline2\nline3\n"); CatchError(err) {
+		if _, err = tmpfile.WriteString("line1\nline2\nline3\n"); ExitOnError(err) {
 			t.Logf("Error: tmpfile.WriteString() = %v\n", err)
 		}
 

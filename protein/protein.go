@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gopher-proteinlab/simpleio"
+	"gopher-proteinlab/parseio"
 )
 
 // Protein amino acid byte
@@ -97,7 +97,7 @@ func ByteToAminoAcid(b byte) (Protein, error) {
 	if base, exists := AminoAcidMap[b]; exists {
 		return base, nil
 	}
-	return Unknown, fmt.Errorf("error: '%s' is an invalid amino acid symbol. Ensure the input contains valid characters.", string(b))
+	return Unknown, fmt.Errorf("Error: '%s' is an invalid amino acid symbol. Ensure the input contains valid characters.", string(b))
 }
 
 // ToProteins converts string to a slice of Protein amino acids.
@@ -105,7 +105,7 @@ func ToProteins(text string) []Protein {
 	var proteins []Protein = make([]Protein, len(text))
 
 	for i := 0; i < len(text); i++ {
-		if aa, err := ByteToAminoAcid(text[i]); simpleio.CatchError(err) {
+		if aa, err := ByteToAminoAcid(text[i]); parseio.ExitOnError(err) {
 			proteins[i] = aa
 		}
 	}
@@ -116,7 +116,7 @@ func ToProteins(text string) []Protein {
 func ToString(proteins []Protein) string {
 	var words strings.Builder
 	for _, aa := range proteins {
-		simpleio.CatchError(words.WriteByte(ProteinToByteMap[aa]))
+		parseio.ExitOnError(words.WriteByte(ProteinToByteMap[aa]))
 	}
 	return words.String()
 }

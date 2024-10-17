@@ -1,8 +1,10 @@
 package annotation
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
-	"gopher-proteinlab/simpleio"
+	"gopher-proteinlab/parseio"
 	"strings"
 )
 
@@ -56,9 +58,15 @@ type Citation struct {
 
 // writeField is a helper function to write a field
 func writeField(buffer *strings.Builder, label, value string) {
-	simpleio.HandleStrBuilder(buffer, label)
-	simpleio.HandleStrBuilder(buffer, value)
-	simpleio.CatchError(buffer.WriteByte('\n'))
+	parseio.HandleStrBuilder(buffer, label)
+	parseio.HandleStrBuilder(buffer, value)
+	parseio.ExitOnError(buffer.WriteByte('\n'))
+}
+
+func xmlToString(v interface{}) string {
+	output, err := xml.MarshalIndent(v, "", "  ")
+	parseio.ExitOnError(err)
+	return string(output)
 }
 
 // ToString returns a string representation of the Entry struct.
@@ -69,25 +77,93 @@ func (e Entry) ToString() string {
 	writeField(&words, "Name: ", strings.Join(e.Name, ", "))
 	writeField(&words, "Protein: ", e.Protein.RecommendedName.FullName)
 
-	simpleio.HandleStrBuilder(&words, "Organism: ")
+	parseio.HandleStrBuilder(&words, "Organism: ")
 	for _, name := range e.Organism.Name {
-		simpleio.HandleStrBuilder(&words, name.Type)
-		simpleio.HandleStrBuilder(&words, ": ")
-		simpleio.HandleStrBuilder(&words, name.Name)
-		simpleio.HandleStrBuilder(&words, "; ")
+		parseio.HandleStrBuilder(&words, name.Type)
+		parseio.HandleStrBuilder(&words, ": ")
+		parseio.HandleStrBuilder(&words, name.Name)
+		parseio.HandleStrBuilder(&words, "; ")
 	}
-	simpleio.CatchError(words.WriteByte('\n'))
+	parseio.ExitOnError(words.WriteByte('\n'))
 
 	writeField(&words, "Sequence: ", e.Sequence.Value)
 	writeField(&words, "Created: ", e.Created)
 	writeField(&words, "Modified: ", e.Modified)
 	writeField(&words, "Version: ", fmt.Sprintf("%d", e.Version))
 
-	simpleio.HandleStrBuilder(&words, "References: ")
+	parseio.HandleStrBuilder(&words, "References: ")
 	for _, ref := range e.References {
-		simpleio.HandleStrBuilder(&words, ref.Citation.Title)
-		simpleio.HandleStrBuilder(&words, "; ")
+		parseio.HandleStrBuilder(&words, ref.Citation.Title)
+		parseio.HandleStrBuilder(&words, "; ")
 	}
-	simpleio.CatchError(words.WriteByte('\n'))
+	parseio.ExitOnError(words.WriteByte('\n'))
 	return words.String()
+}
+
+// ToJson is a Method to convert Entry to a string
+func (e *Entry) ToJson() string {
+	dictionary, err := json.MarshalIndent(e, "", "  ")
+	parseio.ExitOnError(err)
+	return string(dictionary)
+}
+
+func EqualEntries(e1, e2 *Entry) bool {
+	if len(e1.Accession) != len(e2.Accession) {
+		return false
+	}
+	for i := range e1.Accession {
+		if e1.Accession[i] != e2.Accession[i] {
+			return false
+		}
+	}
+
+	if len(e1.Name) != len(e2.Name) {
+		return false
+	}
+	for i := range e1.Name {
+		if e1.Name[i] != e2.Name[i] {
+			return false
+		}
+	}
+
+	if e1.Protein.RecommendedName.FullName != e2.Protein.RecommendedName.FullName {
+		return false
+	}
+
+	if len(e1.Organism.Name) != len(e2.Organism.Name) {
+		return false
+	}
+	for i := range e1.Organism.Name {
+		if e1.Organism.Name[i] != e2.Organism.Name[i] {
+			return false
+		}
+	}
+
+	if e1.Sequence != e2.Sequence {
+		return false
+	}
+
+	if e1.Created != e2.Created {
+		return false
+	}
+
+	if e1.Modified != e2.Modified {
+		return false
+	}
+
+	if e1.Version != e2.Version {
+		return false
+	}
+
+	if len(e1.References) != len(e2.References) {
+		return false
+	}
+
+	for i := range e1.References {
+		if e1.References[i] != e2.References[i] {
+			return false
+		}
+	}
+
+	return true
 }

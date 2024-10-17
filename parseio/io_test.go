@@ -1,4 +1,4 @@
-package simpleio
+package parseio
 
 import (
 	"bufio"
@@ -38,7 +38,7 @@ func TestSimpleOpen(t *testing.T) {
 		if file := SimpleOpen(tmpfile.Name()); file == nil {
 			t.Errorf("Expected file, got nil")
 		} else {
-			CatchError(file.Close())
+			ExitOnError(file.Close())
 		}
 	}
 }
@@ -49,9 +49,9 @@ func TestIsGzip(t *testing.T) {
 		t.Errorf("Expected: IsGzip(invalid) == false, but true\n")
 	}
 
-	if file, err := os.Open("testdata/uniprot-test.dat.gz"); !CatchError(err) {
-		defer CatchError(file.Close())
-		if _, err := pgzip.NewReader(bufio.NewReader(file)); !CatchError(err) {
+	if file, err := os.Open("testdata/uniprot-test.dat.gz"); !ExitOnError(err) {
+		defer ExitOnError(file.Close())
+		if _, err := pgzip.NewReader(bufio.NewReader(file)); !ExitOnError(err) {
 			t.Fatalf("Failed to write to gzip writer: %v", err)
 		}
 	}

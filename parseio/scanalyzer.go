@@ -1,4 +1,4 @@
-package simpleio
+package parseio
 
 import (
 	"bufio"

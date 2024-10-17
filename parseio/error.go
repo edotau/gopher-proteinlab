@@ -1,12 +1,12 @@
-package simpleio
+package parsio
 
 import (
 	"log"
 	"strings"
 )
 
-// CatchError will panic if input error is not nil.
-func CatchError(err error) bool {
+// ExitOnError will panic if input error is not nil.
+func ExitOnError(err error) bool {
 	if err != nil {
 		log.Panic(err)
 	}
@@ -23,5 +23,5 @@ func WarningError(err error) bool {
 
 func HandleStrBuilder(buffer *strings.Builder, text string) {
 	_, err := buffer.WriteString(text)
-	CatchError(err)
+	ExitOnError(err)
 }

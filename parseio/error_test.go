@@ -1,4 +1,4 @@
-package simpleio
+package parseio
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestCatchError(t *testing.T) {
-	err := CatchError(nil)
+	err := ExitOnError(nil)
 	if !err {
 		t.Errorf("Expected true for nil error, got false")
 	}
@@ -24,8 +24,8 @@ func TestCatchError(t *testing.T) {
 	}()
 
 	testErr := fmt.Errorf("test error")
-	CatchError(testErr)
-	t.Errorf("CatchError should have panicked but did not")
+	ExitOnError(testErr)
+	t.Errorf("ExitOnError should have panicked but did not")
 }
 
 func TestWarningError(t *testing.T) {
