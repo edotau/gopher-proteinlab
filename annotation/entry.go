@@ -2,75 +2,47 @@ package annotation
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"gopher-proteinlab/parseio"
 	"strings"
+
+	"gopher-proteinlab/parseio"
 )
 
-type Entry struct {
-	Accession  []string    `xml:"accession"`
-	Name       []string    `xml:"name"`
-	Protein    ProteinInfo `xml:"protein"`
-	Organism   Organism    `xml:"organism"`
-	Sequence   Sequence    `xml:"sequence"`
-	Created    string      `xml:"created,attr"`
-	Modified   string      `xml:"modified,attr"`
-	Version    int         `xml:"version,attr"`
-	References []Reference `xml:"reference"`
+// Entry defines the interface for parsing biological entries like UniProt and EMBL.
+type Entry interface {
+	ToJson() string
+	ToString() string
 }
 
-type ProteinInfo struct {
-	RecommendedName RecommendedName `xml:"recommendedName"`
+// ToJson converts a UniProtEntry to a JSON-formatted string.
+func (e *UniProtEntry) ToJson() string {
+	data, err := json.MarshalIndent(e, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling to JSON: %v", err)
+	}
+	return string(data)
 }
 
-type RecommendedName struct {
-	FullName string `xml:"fullName"`
+// ToJson converts an EMBLEntry to a JSON-formatted string.
+func (e *EMBLEntry) ToJson() string {
+	data, err := json.MarshalIndent(e, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling to JSON: %v", err)
+	}
+	return string(data)
 }
 
-type Organism struct {
-	Name []OrganismName `xml:"name"`
+// ToJson converts a GenBankEntry to a JSON-formatted string.
+func (e *GenBankEntry) ToJson() string {
+	data, err := json.MarshalIndent(e, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling to JSON: %v", err)
+	}
+	return string(data)
 }
 
-type OrganismName struct {
-	Type string `xml:"type,attr"`
-	Name string `xml:",chardata"`
-}
-
-type Sequence struct {
-	Value    string `xml:",chardata"`
-	Length   int    `xml:"length,attr"`
-	Mass     int    `xml:"mass,attr"`
-	Checksum string `xml:"checksum,attr"`
-	Modified string `xml:"modified,attr"`
-	Version  int    `xml:"version,attr"`
-}
-
-type Reference struct {
-	Key      string   `xml:"key,attr"`
-	Citation Citation `xml:"citation"`
-}
-
-type Citation struct {
-	Title string `xml:"title"`
-	Type  string `xml:"type,attr"`
-}
-
-// writeField is a helper function to write a field
-func writeField(buffer *strings.Builder, label, value string) {
-	parseio.HandleStrBuilder(buffer, label)
-	parseio.HandleStrBuilder(buffer, value)
-	parseio.ExitOnError(buffer.WriteByte('\n'))
-}
-
-func xmlToString(v interface{}) string {
-	output, err := xml.MarshalIndent(v, "", "  ")
-	parseio.ExitOnError(err)
-	return string(output)
-}
-
-// ToString returns a string representation of the Entry struct.
-func (e Entry) ToString() string {
+// ToString returns a string representation of the UniProtEntry struct.
+func (e UniProtEntry) ToString() string {
 	var words strings.Builder
 
 	writeField(&words, "Accession: ", strings.Join(e.Accession, ", "))
@@ -100,70 +72,62 @@ func (e Entry) ToString() string {
 	return words.String()
 }
 
-// ToJson is a Method to convert Entry to a string
-func (e *Entry) ToJson() string {
-	dictionary, err := json.MarshalIndent(e, "", "  ")
-	parseio.ExitOnError(err)
-	return string(dictionary)
+// ToString converts an EMBLEntry to a string.
+func (e EMBLEntry) ToString() string {
+	var sb strings.Builder
+	writeField(&sb, "ID: ", e.ID)
+	writeField(&sb, "Accession: ", strings.Join(e.Accession, ", "))
+	writeField(&sb, "Keywords: ", strings.Join(e.Keywords, ", "))
+	writeField(&sb, "Source: ", e.Source)
+	sb.WriteString("Features:\n")
+	for _, feature := range e.Features {
+		writeField(&sb, "  Key: ", feature.Key)
+		writeField(&sb, "  Location: ", feature.Location)
+		for key, value := range feature.Qualifiers {
+			writeField(&sb, fmt.Sprintf("    %s: ", key), value)
+		}
+	}
+	writeField(&sb, "Sequence: ", e.Sequence)
+	return sb.String()
 }
 
-func EqualEntries(e1, e2 *Entry) bool {
-	if len(e1.Accession) != len(e2.Accession) {
-		return false
+// ToString returns a string representation of the GenBankEntry struct.
+func (e GenBankEntry) ToString() string {
+	var sb strings.Builder
+
+	// Helper function to write fields into the string builder
+	writeField := func(label, value string) {
+		sb.WriteString(label)
+		sb.WriteString(value)
+		sb.WriteByte('\n')
 	}
-	for i := range e1.Accession {
-		if e1.Accession[i] != e2.Accession[i] {
-			return false
+
+	writeField("Locus: ", e.Locus)
+	writeField("Definition: ", e.Definition)
+	writeField("Accession: ", strings.Join(e.Accession, ", "))
+	writeField("Version: ", e.Version)
+	writeField("Keywords: ", strings.Join(e.Keywords, ", "))
+	writeField("Source: ", e.Source)
+	writeField("Organism: ", e.Organism)
+
+	// Write features
+	sb.WriteString("Features:\n")
+	for _, feature := range e.Features {
+		writeField("  Key: ", feature.Key)
+		writeField("  Location: ", feature.Location)
+		for key, value := range feature.Qualifiers {
+			writeField(fmt.Sprintf("    %s: ", key), value)
 		}
 	}
 
-	if len(e1.Name) != len(e2.Name) {
-		return false
-	}
-	for i := range e1.Name {
-		if e1.Name[i] != e2.Name[i] {
-			return false
-		}
-	}
+	writeField("Sequence: ", e.Sequence)
 
-	if e1.Protein.RecommendedName.FullName != e2.Protein.RecommendedName.FullName {
-		return false
-	}
+	return sb.String()
+}
 
-	if len(e1.Organism.Name) != len(e2.Organism.Name) {
-		return false
-	}
-	for i := range e1.Organism.Name {
-		if e1.Organism.Name[i] != e2.Organism.Name[i] {
-			return false
-		}
-	}
-
-	if e1.Sequence != e2.Sequence {
-		return false
-	}
-
-	if e1.Created != e2.Created {
-		return false
-	}
-
-	if e1.Modified != e2.Modified {
-		return false
-	}
-
-	if e1.Version != e2.Version {
-		return false
-	}
-
-	if len(e1.References) != len(e2.References) {
-		return false
-	}
-
-	for i := range e1.References {
-		if e1.References[i] != e2.References[i] {
-			return false
-		}
-	}
-
-	return true
+// writeField is a helper function to write a label and its corresponding value to a string builder.
+func writeField(buffer *strings.Builder, label, value string) {
+	parseio.HandleStrBuilder(buffer, label)
+	parseio.HandleStrBuilder(buffer, value)
+	parseio.ExitOnError(buffer.WriteByte('\n'))
 }

@@ -1,4 +1,4 @@
-package parsio
+package parseio
 
 import (
 	"log"
