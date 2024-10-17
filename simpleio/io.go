@@ -9,6 +9,7 @@ import (
 	"github.com/klauspost/pgzip"
 )
 
+// SimpleOpen opens a file and returns the file handle.
 func SimpleOpen(filename string) *os.File {
 	if file, err := os.Open(filename); CatchError(err) {
 		return file
@@ -27,6 +28,7 @@ func FileHandler(filename string) (*bufio.Reader, *os.File) {
 	return reader, file
 }
 
+// NewGunzip is a helper function to define a pgzip.Reader{} and handles and errors.
 func NewGunzip(reader io.Reader) *pgzip.Reader {
 	if gunzip, err := pgzip.NewReader(reader); CatchError(err) {
 		return gunzip
