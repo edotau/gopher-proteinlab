@@ -21,7 +21,6 @@ linters:
     - gofmt
     - gosimple
     - goimports
-    - gci
     - gosec
     - ineffassign
     - prealloc
