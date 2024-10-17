@@ -10,11 +10,15 @@ import (
 )
 
 // FileHandler opens a file string path and handles any errors that may happen.
-func FileHandler(filename string) *os.File {
+func FileHandler(filename string) (*bufio.Reader, *os.File) {
 	if file, err := os.Open(filename); CatchError(err) {
-		return file
+		reader := bufio.NewReader(file)
+		if IsGzip(reader) {
+			reader = bufio.NewReader(NewGunzip(reader))
+		}
+		return reader, file
 	}
-	return nil
+	return nil, nil
 }
 
 func NewGunzip(reader io.Reader) *pgzip.Reader {

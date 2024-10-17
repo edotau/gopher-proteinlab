@@ -1,12 +1,11 @@
-all: install test lint
-
 build:
-	docker build . -t gonomics
+	docker build . -t gopher-proteinlab
 
 clean:
 	go fmt ./...
 	golangci-lint run ./... --fix
 	yamlfmt .
+
 install:
 	go mod download && go mod verify
 	go install ./...

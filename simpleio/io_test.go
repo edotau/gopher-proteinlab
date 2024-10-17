@@ -3,6 +3,7 @@ package simpleio
 import (
 	"bufio"
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/klauspost/pgzip"
@@ -13,9 +14,11 @@ func TestIsGzip(t *testing.T) {
 	if IsGzip(invalid) {
 		t.Errorf("Expected: IsGzip(invalid) == false, but true\n")
 	}
-	if gunzip, err := pgzip.NewReader(FileHandler("testdata/uniprot-test.dat.gz")); !CatchError(err) {
-		t.Fatalf("Failed to write to gzip writer: %v", err)
-	} else {
-		CatchError(gunzip.Close())
+
+	if file, err := os.Open("testdata/uniprot-test.dat.gz"); !CatchError(err) {
+		defer CatchError(file.Close())
+		if _, err := pgzip.NewReader(bufio.NewReader(file)); !CatchError(err) {
+			t.Fatalf("Failed to write to gzip writer: %v", err)
+		}
 	}
 }
