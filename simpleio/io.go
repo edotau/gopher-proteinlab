@@ -9,16 +9,22 @@ import (
 	"github.com/klauspost/pgzip"
 )
 
-// FileHandler opens a file string path and handles any errors that may happen.
-func FileHandler(filename string) (*bufio.Reader, *os.File) {
+func SimpleOpen(filename string) *os.File {
 	if file, err := os.Open(filename); CatchError(err) {
-		reader := bufio.NewReader(file)
-		if IsGzip(reader) {
-			reader = bufio.NewReader(NewGunzip(reader))
-		}
-		return reader, file
+		return file
 	}
-	return nil, nil
+	return nil
+}
+
+// FileHandler opens a file string path and handles any errors including gzipped files.
+func FileHandler(filename string) (*bufio.Reader, *os.File) {
+	file := SimpleOpen(filename)
+	reader := bufio.NewReader(file)
+
+	if IsGzip(reader) {
+		reader = bufio.NewReader(NewGunzip(reader))
+	}
+	return reader, file
 }
 
 func NewGunzip(reader io.Reader) *pgzip.Reader {
