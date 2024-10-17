@@ -1,4 +1,4 @@
-package stdio
+package simpleio
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// Scanalyzer wraps around bufio.Scanner and adds a close method.
+// Scanalyzer structwraps around bufio.Scanner and adds a close method.
 type Scanalyzer struct {
 	*bufio.Scanner
 	close func() error
@@ -18,6 +18,17 @@ func (s *Scanalyzer) Close() error {
 		return s.close()
 	}
 	return nil
+}
+
+// NewScanner creates a new *Scanalyzer struct.
+func NewScanner(filename string) *Scanalyzer {
+	file := FileHandler(filename)
+	reader := bufio.NewReader(file)
+
+	if IsGzip(reader) {
+		return NewScannerio(NewGunzip(reader), file)
+	}
+	return NewScannerio(reader, file)
 }
 
 // NewScannerio creates a new Scanalyzer from any io.Reader with an optional close function.

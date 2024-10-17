@@ -10,8 +10,9 @@ import (
 	"strings"
 	"sync"
 
+	"gopher-proteinlab/simpleio"
+
 	"github.com/vertgenlab/gonomics/fileio"
-	"gopher-proteinlab/stdio"
 )
 
 // Fasta struct representing the Name and Sequence for each FASTA entry
@@ -24,14 +25,14 @@ type Fasta struct {
 func writeFasta(file *fileio.EasyWriter, rec Fasta, lineLength int) {
 	var err error
 	_, err = fmt.Fprintf(file, ">%s\n", rec.Name)
-	stdio.CatchError(err)
+	simpleio.CatchError(err)
 	for i := 0; i < len(rec.Seq); i += lineLength {
 		if i+lineLength > len(rec.Seq) {
 			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:])
-			stdio.CatchError(err)
+			simpleio.CatchError(err)
 		} else {
 			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:i+lineLength])
-			stdio.CatchError(err)
+			simpleio.CatchError(err)
 		}
 	}
 }

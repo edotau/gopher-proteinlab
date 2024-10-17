@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gopher-proteinlab/stdio"
+	"gopher-proteinlab/simpleio"
 )
 
 // Protein amino acid byte
@@ -105,7 +105,7 @@ func ToProteins(text string) []Protein {
 	var proteins []Protein = make([]Protein, len(text))
 
 	for i := 0; i < len(text); i++ {
-		if aa, err := ByteToAminoAcid(text[i]); stdio.CatchError(err) {
+		if aa, err := ByteToAminoAcid(text[i]); simpleio.CatchError(err) {
 			proteins[i] = aa
 		}
 	}
@@ -116,7 +116,7 @@ func ToProteins(text string) []Protein {
 func ToString(proteins []Protein) string {
 	var words strings.Builder
 	for _, aa := range proteins {
-		stdio.CatchError(words.WriteByte(ProteinToByteMap[aa]))
+		simpleio.CatchError(words.WriteByte(ProteinToByteMap[aa]))
 	}
 	return words.String()
 }
