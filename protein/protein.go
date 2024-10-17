@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gopher-proteinlab/simpleio"
+	"gopher-proteinlab/stdio"
 )
 
 // Protein amino acid byte

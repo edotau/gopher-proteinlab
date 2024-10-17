@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"gopher-proteinlab/simpleio"
 	"github.com/vertgenlab/gonomics/fileio"
+	"gopher-proteinlab/stdio"
 )
 
 // Fasta struct representing the Name and Sequence for each FASTA entry
