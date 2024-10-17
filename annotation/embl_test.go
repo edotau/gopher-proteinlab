@@ -6,9 +6,7 @@ import (
 	"testing"
 
 	"gopher-proteinlab/parseio"
-
 )
-
 
 func TestParseEMBL(t *testing.T) {
 	// Simulate an EMBL entry using a string
@@ -58,7 +56,7 @@ SQ   Sequence 1234 BP; 614 A; 324 C; 170 G; 126 T; 0 other;
 	// Use a bufio.Scanner for testing
 	emblReader := strings.NewReader(emblData) // Use strings.NewReader directly for string input
 
-// Wrap the bufio.Scanner in Scanalyzer
+	// Wrap the bufio.Scanner in Scanalyzer
 	emblScanner := &parseio.Scanalyzer{
 		Scanner: bufio.NewScanner(emblReader), // Wrap the bufio.Scanner
 	}

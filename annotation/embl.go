@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"io"
 
-
 	"gopher-proteinlab/parseio"
 	"strings"
 )
 
 // EMBLEntry represents the structure of an EMBL file entry.
 type EMBLEntry struct {
-	ID        string         `json:"id"`
-	Accession []string       `json:"accession"`
-	Keywords  []string       `json:"keywords"`
-	Source    string         `json:"source"`
-	Features  []Feature  	`json:"features"`
-	Sequence  string         `json:"sequence"`
+	ID        string    `json:"id"`
+	Accession []string  `json:"accession"`
+	Keywords  []string  `json:"keywords"`
+	Source    string    `json:"source"`
+	Features  []Feature `json:"features"`
+	Sequence  string    `json:"sequence"`
 }
 
 // // Feature represents a feature in the EMBL file.
@@ -28,7 +27,7 @@ type EMBLEntry struct {
 
 // EMBLReader reads an EMBL .dat file, decodes its content, and returns the parsed data one entry at a time.
 func EMBLReader(filename string) {
-	emblScanner := parseio.NewScanner(filename)// This will be a wrapper around bufio.Scanner
+	emblScanner := parseio.NewScanner(filename) // This will be a wrapper around bufio.Scanner
 	defer emblScanner.Close()
 
 	for {
@@ -54,25 +53,26 @@ func parseEMBL(scanner *parseio.Scanalyzer) (*EMBLEntry, error) {
 
 		// ID line (entry ID)
 		if strings.HasPrefix(line, "ID") {
-			entry.ID = strings.TrimSpace(line[5:])
+			entry.ID = strings.TrimSuffix(strings.TrimSpace(line[2:]), ";")
 		}
 
 		// AC line (accession numbers)
 		if strings.HasPrefix(line, "AC") {
-			accessions := strings.Split(line[5:], ";")
-			for _, acc := range accessions {
-				entry.Accession = append(entry.Accession, strings.TrimSpace(acc))
+			accessions := strings.Split(strings.TrimSpace(line[2:]), ";")
+			for _, i := range accessions {
+				if acc := strings.TrimSpace(i); acc != "" {
+					entry.Accession = append(entry.Accession, strings.TrimSpace(acc))
+				}
 			}
 		}
-
-		// KW line (keywords)
 		if strings.HasPrefix(line, "KW") {
-			keywords := strings.Split(line[5:], ";")
-			for _, keyword := range keywords {
-				entry.Keywords = append(entry.Keywords, strings.TrimSpace(keyword))
+			words := strings.Split(strings.TrimSpace(line[2:]), ";")
+			for _, i := range words {
+				if key := strings.TrimSpace(i); key != "" {
+					entry.Keywords = append(entry.Keywords, key)
+				}
 			}
 		}
-
 		// FT line (features)
 		if strings.HasPrefix(line, "FT") {
 			ftLine := strings.TrimSpace(line[5:])
@@ -125,7 +125,6 @@ func parseEMBL(scanner *parseio.Scanalyzer) (*EMBLEntry, error) {
 
 	return entry, nil
 }
-
 
 // EqualEmblEntry is a helper function to compare two EMBLEntry structs.
 func EqualEmblEntry(e1, e2 *EMBLEntry) bool {
