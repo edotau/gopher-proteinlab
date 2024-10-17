@@ -24,14 +24,14 @@ type Fasta struct {
 func writeFasta(file *fileio.EasyWriter, rec Fasta, lineLength int) {
 	var err error
 	_, err = fmt.Fprintf(file, ">%s\n", rec.Name)
-	simpleio.CatchError(err)
+	stdio.CatchError(err)
 	for i := 0; i < len(rec.Seq); i += lineLength {
 		if i+lineLength > len(rec.Seq) {
 			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:])
-			simpleio.CatchError(err)
+			stdio.CatchError(err)
 		} else {
 			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:i+lineLength])
-			simpleio.CatchError(err)
+			stdio.CatchError(err)
 		}
 	}
 }

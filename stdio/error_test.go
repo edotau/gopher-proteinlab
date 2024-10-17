@@ -1,4 +1,4 @@
-package simpleio
+package stdio
 
 import (
 	"fmt"

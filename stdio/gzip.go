@@ -1,4 +1,4 @@
-package simpleio
+package stdio
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func openFile(filename string) (*bufio.Scanner, *os.File, error) {
+func Vim(filename string) (*bufio.Scanner, *os.File, error) {
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
@@ -19,7 +19,7 @@ func openFile(filename string) (*bufio.Scanner, *os.File, error) {
 	reader := bufio.NewReader(file)
 
 	// Check if the file is gzip-compressed using Peek
-	isGzipped, err := isGzip(filename)
+	isGzipped, err := IsGzip(filename)
 	if err != nil {
 		file.Close()
 		return nil, nil, fmt.Errorf("error checking if file is gzip: %v", err)
@@ -39,8 +39,8 @@ func openFile(filename string) (*bufio.Scanner, *os.File, error) {
 	return bufio.NewScanner(reader), file, nil
 }
 
-// isGzip checks if the file is gzip-compressed by peeking at its magic number
-func isGzip(filename string) (bool, error) {
+// IsGzip checks if the file is gzip-compressed by peeking at its magic number
+func IsGzip(filename string) (bool, error) {
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
