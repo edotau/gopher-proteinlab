@@ -13,8 +13,8 @@ func CatchError(err error) bool {
 	return err == nil
 }
 
-// ThrowError will output a warning message and return false if err != nil - Warning: err msg
-func ThrowError(err error) bool {
+// WarningError will output a warning message and return false if err != nil - Warning: err msg
+func WarningError(err error) bool {
 	if err != nil {
 		log.Printf("Warning: %s", err)
 	}

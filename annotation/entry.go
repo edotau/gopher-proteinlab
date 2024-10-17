@@ -69,7 +69,7 @@ func (e Entry) ToString() string {
 	writeField(&words, "Name: ", strings.Join(e.Name, ", "))
 	writeField(&words, "Protein: ", e.Protein.RecommendedName.FullName)
 
-	words.WriteString("Organism: ")
+	simpleio.HandleStrBuilder(&words, "Organism: ")
 	for _, name := range e.Organism.Name {
 		simpleio.HandleStrBuilder(&words, name.Type)
 		simpleio.HandleStrBuilder(&words, ": ")
@@ -83,7 +83,7 @@ func (e Entry) ToString() string {
 	writeField(&words, "Modified: ", e.Modified)
 	writeField(&words, "Version: ", fmt.Sprintf("%d", e.Version))
 
-	words.WriteString("References: ")
+	simpleio.HandleStrBuilder(&words, "References: ")
 	for _, ref := range e.References {
 		simpleio.HandleStrBuilder(&words, ref.Citation.Title)
 		simpleio.HandleStrBuilder(&words, "; ")

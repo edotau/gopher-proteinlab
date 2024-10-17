@@ -28,10 +28,10 @@ func TestCatchError(t *testing.T) {
 	t.Errorf("CatchError should have panicked but did not")
 }
 
-func TestThrowError(t *testing.T) {
+func TestWarningError(t *testing.T) {
 	var logOutput strings.Builder // Capture log output
 	log.SetOutput(&logOutput)
-	err := ThrowError(nil) // Test case where error is nil
+	err := WarningError(nil) // Test case where error is nil
 
 	if !err {
 		t.Errorf("Expected true for nil error, got false")
@@ -42,7 +42,7 @@ func TestThrowError(t *testing.T) {
 
 	logOutput.Reset()
 	testErr := fmt.Errorf("test error")
-	err = ThrowError(testErr)
+	err = WarningError(testErr)
 
 	if err {
 		t.Errorf("Expected false for non-nil error, got true")
