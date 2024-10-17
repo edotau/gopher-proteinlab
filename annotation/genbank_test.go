@@ -2,7 +2,10 @@ package annotation
 
 import (
 	"strings"
+	"bufio"
 	"testing"
+	"gopher-proteinlab/parseio"
+	"reflect"
 )
 
 func TestParseGenBank(t *testing.T) {
@@ -14,50 +17,52 @@ ACCESSION   X64011 S78972
 VERSION     X64011.1  GI:44010
 KEYWORDS    sod gene; superoxide dismutase.
 SOURCE      Listeria ivanovii
-  ORGANISM  Listeria ivanovii
-            Bacteria; Firmicutes; Bacillales; Listeriaceae; Listeria. 
+	ORGANISM  Listeria ivanovii
+            Bacteria; Firmicutes; Bacillales; Listeriaceae; Listeria.
 FEATURES             Location/Qualifiers
-     CDS             109..717
-                     /gene="sod"
-                     /product="superoxide dismutase"
+	CDS             109..717
+                    /gene="sod"
+                    /product="superoxide dismutase"
 ORIGIN      
         1 cgttatttaa ggtgttacat agttctatgg aaatagggtc tatacctttc gccttacaat
        61 gtaatttctt ..........
 //
 `
-	// Expected output
+
+	// Create a scanner for the test data
+	genbankReader := strings.NewReader(genbankData)
+	genbankScanner := &parseio.Scanalyzer{
+		Scanner: bufio.NewScanner(genbankReader), // Wrap the bufio.Scanner
+	}
+
+	// Parse the GenBank entry
+	entry, err := parseGenBank(genbankScanner)
+	if err != nil {
+		t.Fatalf("parseGenBank failed: %v", err)
+	}
+
 	expectedEntry := &GenBankEntry{
-		Locus:      "LISOD                    756 bp    DNA     linear   BCT 30-JUN-1993",
+		Locus:      "LISOD",
 		Definition: "Listeria ivanovii sod gene for superoxide dismutase.",
 		Accession:  []string{"X64011", "S78972"},
 		Version:    "X64011.1  GI:44010",
 		Keywords:   []string{"sod gene", "superoxide dismutase"},
 		Source:     "Listeria ivanovii",
-		Organism:   "Listeria ivanovii",
+		Organism:   "Listeria ivanovii Bacteria; Firmicutes; Bacillales; Listeriaceae; Listeria.",
 		Features: []GenBankFeature{
 			{
 				Key:      "CDS",
 				Location: "109..717",
 				Qualifiers: map[string]string{
-					"/gene":    "sod",
-					"/product": "superoxide dismutase",
+					"/gene":     "sod",
+					"/product":  "superoxide dismutase",
 				},
 			},
 		},
-		Sequence: "cgttatttaa ggtgttacat agttctatgg aaatagggtc tatacctttc gccttacaat gtaatttctt ..........",
+		Sequence: "cgttatttaaggtgttacatagttctatggaaatagggtctatacctttcgccttacaatgtaatttctt..........",
 	}
 
-	// Fix the scanner initialization for GenBank
-	reader := strings.NewReader(genbankData)
-
-	// Assuming parseGenBank expects *parseio.Scanalyzer
-	entry, err := parseGenBank(reader)
-	if err != nil {
-		t.Fatalf("Unexpected error while parsing GenBank data: %v", err)
-	}
-
-	// Compare the parsed entry with the expected entry
-	if !EqualGenBankEntry(entry, expectedEntry) {
-		t.Errorf("Parsed GenBank entry does not match expected result\nGot:\n%s\nExpected:\n%s", entry.ToString(), expectedEntry.ToString())
+	if !reflect.DeepEqual(entry, expectedEntry) {
+		t.Errorf("Parsed entry does not match expected entry.\nParsed: %s\nExpected: %s", entry.ToJson(), expectedEntry.ToJson())
 	}
 }

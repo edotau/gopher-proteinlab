@@ -1,189 +1,75 @@
 package annotation
 
 import (
-	"bufio"
+
 	"fmt"
-	"gopher-proteinlab/parseio"
-	"io"
-	"os"
 	"strings"
+
+	"gopher-proteinlab/parseio"
 )
 
-// GenBankEntry represents the structure of a GenBank file entry.
+// GenBankEntry represents a parsed GenBank file entry.
 type GenBankEntry struct {
-	Locus      string
-	Definition string
-	Accession  []string
-	Version    string
-	Keywords   []string
-	Source     string
-	Organism   string
-	References []GenBankReference
-	Features   []GenBankFeature
-	Sequence   string
+	Locus      string            // Locus line containing information about the sequence
+	Definition string            // Definition line describing the sequence
+	Accession  []string          // Accession numbers of the sequence
+	Version    string            // Version information of the sequence
+	Keywords   []string          // Keywords associated with the sequence
+	Source     string            // Source organism or cell line for the sequence
+	Organism   string            // Full organism classification of the sequence
+	References []GenBankReference // List of references in the sequence
+	Features   []GenBankFeature   // List of features such as genes and coding sequences
+	Sequence   string            // The nucleotide or protein sequence
 }
 
 // GenBankFeature represents a feature in a GenBank file.
 type GenBankFeature struct {
-	Key        string
-	Location   string
-	Qualifiers map[string]string
+	Key        string            // Feature key (e.g., CDS, gene)
+	Location   string            // Location of the feature in the sequence
+	Qualifiers map[string]string // Additional qualifiers for the feature
 }
 
-// GenBankReference represents a reference in a GenBank file.
+// GenBankReference represents a reference section in a GenBank file.
 type GenBankReference struct {
-	Number  string
-	Authors string
-	Title   string
-	Journal string
-	Medline string
-	Comment string
+	Number  string // Reference number
+	Authors string // Authors of the reference
+	Title   string // Title of the referenced work
+	Journal string // Journal of publication
+	Medline string // Medline information
+	Comment string // Additional comments about the reference
 }
 
-// GenBankReader reads a GenBank .gbff file, decodes its content, and returns the parsed data.
-func GenBankReader(filename string) {
-	file, err := os.Open(filename)
-	parseio.ExitOnError(err)
-
-	defer file.Close()
-
-	for {
-		// Parse each entry and process it
-		entry, err := parseGenBank(file)
-		if err == io.EOF {
-			break // End of file reached
-		}
-		parseio.ExitOnError(err)
-		// TODO: Data transformations go here
-		fmt.Println(entry.ToString())
-	}
-}
-
-// parseGenBank reads and parses one GenBank entry at a time.
-func parseGenBank(r io.Reader) (*GenBankEntry, error) {
-	scanner := bufio.NewScanner(r)
+// GenBankReader reads a GenBank file, parses its content, and returns the parsed entry data.
+// It processes the file in chunks to avoid loading the entire file into memory.
+func parseGenBank(scanner *parseio.Scanalyzer) (*GenBankEntry, error) {
 	entry := &GenBankEntry{}
-	currentFeature := GenBankFeature{}
-	isSequence := false
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.TrimSpace(scanner.Text())
 
-		// LOCUS line
-		if strings.HasPrefix(line, "LOCUS") {
-			entry.Locus = strings.TrimSpace(line[12:])
-		}
-
-		// DEFINITION line
-		if strings.HasPrefix(line, "DEFINITION") {
+		// Use switch case to handle different line types in the GenBank file
+		switch {
+		case strings.HasPrefix(line, "LOCUS"):
+			entry.Locus = strings.Fields(line[12:])[0]  // Capture only the first word
+		case strings.HasPrefix(line, "DEFINITION"):
 			entry.Definition = strings.TrimSpace(line[12:])
-		}
-
-		// ACCESSION line
-		if strings.HasPrefix(line, "ACCESSION") {
-			accessions := strings.Split(strings.TrimSpace(line[12:]), " ")
-			for _, acc := range accessions {
-				entry.Accession = append(entry.Accession, strings.TrimSpace(acc))
-			}
-		}
-
-		// VERSION line
-		if strings.HasPrefix(line, "VERSION") {
+		case strings.HasPrefix(line, "ACCESSION"):
+			entry.Accession = strings.Fields(line[12:])
+		case strings.HasPrefix(line, "VERSION"):
 			entry.Version = strings.TrimSpace(line[12:])
-		}
-
-		// KEYWORDS line
-		if strings.HasPrefix(line, "KEYWORDS") {
-			keywords := strings.Split(strings.TrimSpace(line[12:]), ";")
-			for _, keyword := range keywords {
-				entry.Keywords = append(entry.Keywords, strings.TrimSpace(keyword))
-			}
-		}
-
-		// SOURCE line
-		if strings.HasPrefix(line, "SOURCE") {
+		case strings.HasPrefix(line, "KEYWORDS"):
+			entry.Keywords = strings.Split(strings.TrimSpace(line[12:]), ";")
+		case strings.HasPrefix(line, "SOURCE"):
 			entry.Source = strings.TrimSpace(line[12:])
+		case strings.HasPrefix(line, "ORGANISM"):
+			entry.Organism = readMultiLineOrganism(scanner, line)
+		case strings.HasPrefix(line, "REFERENCE"):
+			entry.References = append(entry.References, readReference(scanner, line))
+		case strings.HasPrefix(line, "FEATURES"):
+			entry.Features = readFeatures(scanner)
+		case strings.HasPrefix(line, "ORIGIN"):
+			entry.Sequence = readSequence(scanner)
 		}
-
-		// ORGANISM line
-		if strings.HasPrefix(line, "  ORGANISM") {
-			entry.Organism = strings.TrimSpace(line[12:])
-		}
-
-		// REFERENCE lines
-		if strings.HasPrefix(line, "REFERENCE") {
-			ref := GenBankReference{
-				Number: strings.TrimSpace(line[12:]),
-			}
-			entry.References = append(entry.References, ref)
-		}
-
-		// AUTHORS line within REFERENCE
-		if strings.HasPrefix(line, "  AUTHORS") {
-			entry.References[len(entry.References)-1].Authors = strings.TrimSpace(line[12:])
-		}
-
-		// TITLE line within REFERENCE
-		if strings.HasPrefix(line, "  TITLE") {
-			entry.References[len(entry.References)-1].Title = strings.TrimSpace(line[12:])
-		}
-
-		// JOURNAL line within REFERENCE
-		if strings.HasPrefix(line, "  JOURNAL") {
-			entry.References[len(entry.References)-1].Journal = strings.TrimSpace(line[12:])
-		}
-
-		// MEDLINE line within REFERENCE
-		if strings.HasPrefix(line, "  MEDLINE") {
-			entry.References[len(entry.References)-1].Medline = strings.TrimSpace(line[12:])
-		}
-
-		// FEATURES section
-		if strings.HasPrefix(line, "FEATURES") {
-			isSequence = false
-		}
-
-		// Parse features
-		if strings.HasPrefix(line, "     ") && strings.HasPrefix(strings.TrimSpace(line), "/") {
-			parts := strings.SplitN(line, "=", 2)
-			if len(parts) == 2 {
-				qualifierKey := strings.TrimSpace(parts[0])
-				qualifierValue := strings.Trim(strings.TrimSpace(parts[1]), "\"")
-				currentFeature.Qualifiers[qualifierKey] = qualifierValue
-			}
-		} else if strings.HasPrefix(line, "     ") && !strings.HasPrefix(strings.TrimSpace(line), "/") {
-			// Start a new feature
-			if currentFeature.Key != "" {
-				entry.Features = append(entry.Features, currentFeature)
-			}
-			currentFeature = GenBankFeature{
-				Key:        strings.Fields(line)[0],
-				Location:   strings.Join(strings.Fields(line)[1:], " "),
-				Qualifiers: make(map[string]string),
-			}
-		}
-
-		// SEQUENCE section
-		if strings.HasPrefix(line, "ORIGIN") {
-			isSequence = true
-			entry.Sequence = ""
-		}
-
-		// Parse sequence data
-		if isSequence && strings.HasPrefix(line, " ") && len(line) > 10 {
-			sequence := strings.ReplaceAll(line[10:], " ", "")
-			entry.Sequence += sequence
-		}
-
-		// End of entry
-		if strings.HasPrefix(line, "//") {
-			break
-		}
-	}
-
-	// Append the last feature
-	if currentFeature.Key != "" {
-		entry.Features = append(entry.Features, currentFeature)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -193,60 +79,112 @@ func parseGenBank(r io.Reader) (*GenBankEntry, error) {
 	return entry, nil
 }
 
-// EqualGenBankEntry is a helper function to compare two GenBankEntry structs.
-func EqualGenBankEntry(e1, e2 *GenBankEntry) bool {
-	// Compare Locus
-	if e1.Locus != e2.Locus {
-		return false
-	}
 
-	// Compare Accession
-	if len(e1.Accession) != len(e2.Accession) {
-		return false
+
+// readMultiLineOrganism reads multi-line organism information from the GenBank file.
+func readMultiLineOrganism(scanner *parseio.Scanalyzer, line string) string {
+	// Start with the first line of the organism
+	organism := strings.TrimSpace(line[12:])
+	for scanner.Scan() {
+		nextLine := strings.TrimSpace(scanner.Text())
+		if len(nextLine) == 0 || strings.HasPrefix(nextLine, "REFERENCE") || strings.HasPrefix(nextLine, "FEATURES") {
+			break
+		}
+		organism += " " + nextLine
 	}
-	for i := range e1.Accession {
-		if e1.Accession[i] != e2.Accession[i] {
-			return false
+	return organism
+}
+
+
+// readReference reads a reference section from the GenBank file and returns a GenBankReference.
+func readReference(scanner *parseio.Scanalyzer, firstLine string) GenBankReference {
+	var reference GenBankReference
+	reference.Number = strings.TrimSpace(firstLine[12:])
+
+	// Continue reading the reference block
+	for scanner.Scan() {
+		refLine := strings.TrimSpace(scanner.Text())
+
+		switch {
+		case strings.HasPrefix(refLine, "AUTHORS"):
+			reference.Authors = strings.TrimSpace(refLine[12:])
+		case strings.HasPrefix(refLine, "TITLE"):
+			reference.Title = strings.TrimSpace(refLine[12:])
+		case strings.HasPrefix(refLine, "JOURNAL"):
+			reference.Journal = strings.TrimSpace(refLine[12:])
+		case strings.HasPrefix(refLine, "MEDLINE"):
+			reference.Medline = strings.TrimSpace(refLine[12:])
+		case strings.HasPrefix(refLine, "COMMENT"):
+			reference.Comment = strings.TrimSpace(refLine[12:])
+		default:
+			// Stop reading once we reach a non-reference line
+			return reference
 		}
 	}
+	return reference
+}
 
-	// Compare Definition
-	if e1.Definition != e2.Definition {
-		return false
-	}
+// readFeatures reads the features section from the GenBank file and returns a slice of GenBankFeatures.
+func readFeatures(scanner *parseio.Scanalyzer) []GenBankFeature {
+	var features []GenBankFeature
+	var currentFeature GenBankFeature
 
-	// Compare Keywords
-	if len(e1.Keywords) != len(e2.Keywords) {
-		return false
-	}
-	for i := range e1.Keywords {
-		if e1.Keywords[i] != e2.Keywords[i] {
-			return false
-		}
-	}
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
 
-	// Compare Features
-	if len(e1.Features) != len(e2.Features) {
-		return false
-	}
-	for i := range e1.Features {
-		if e1.Features[i].Key != e2.Features[i].Key || e1.Features[i].Location != e2.Features[i].Location {
-			return false
+		// Stop processing features when ORIGIN (sequence) is reached
+		if strings.HasPrefix(line, "ORIGIN") {
+			break
 		}
-		if len(e1.Features[i].Qualifiers) != len(e2.Features[i].Qualifiers) {
-			return false
-		}
-		for k, v := range e1.Features[i].Qualifiers {
-			if e2.Features[i].Qualifiers[k] != v {
-				return false
+
+		// Handle feature lines (starting with feature key, like CDS)
+		if strings.HasPrefix(line, "     ") && !strings.HasPrefix(line, "/") {
+			// Append the current feature if it exists
+			if currentFeature.Key != "" {
+				features = append(features, currentFeature)
+			}
+
+			// Create a new feature
+			parts := strings.Fields(line)
+			if len(parts) >= 2 {
+				currentFeature = GenBankFeature{
+					Key:        parts[0],
+					Location:   parts[1],
+					Qualifiers: make(map[string]string),
+				}
+			}
+		} else if strings.HasPrefix(line, "/") { // Handle qualifier lines (e.g., /gene="sod")
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				qualifierKey := strings.TrimSpace(parts[0])
+				qualifierValue := strings.Trim(strings.TrimSpace(parts[1]), "\"")
+				currentFeature.Qualifiers[qualifierKey] = qualifierValue
 			}
 		}
 	}
 
-	// Compare Sequence
-	if e1.Sequence != e2.Sequence {
-		return false
+	// Append the last feature if present
+	if currentFeature.Key != "" {
+		features = append(features, currentFeature)
 	}
 
-	return true
+	return features
+}
+
+
+// readSequence reads the sequence data from the GenBank file.
+func readSequence(scanner *parseio.Scanalyzer) string {
+	var sequenceBuilder strings.Builder
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "//" {
+			break
+		}
+		// Remove line numbers and spaces from the sequence
+		sequenceParts := strings.Fields(line)
+		if len(sequenceParts) > 1 {
+			sequenceBuilder.WriteString(strings.Join(sequenceParts[1:], ""))
+		}
+	}
+	return sequenceBuilder.String()
 }
