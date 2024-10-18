@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 
 	"gopher-proteinlab/parseio"
+	"gopher-proteinlab/protein"
 	"testing"
 )
 
@@ -12,9 +13,9 @@ func TestUniProtEntryToJSON(t *testing.T) {
 	entry := UniProtEntry{
 		Accession: []string{"P12345", "Q67890"},
 		Name:      []string{"Example Protein"},
-		Protein: UniProtProtein{
-			RecommendedName: UniProtRecommendedName{
-				FullName: "Example Protein Full Name",
+		Protein: protein.UniProtProtein{
+			RecommendedName: protein.UniProtRecommendedName{
+				FullName: protein.EvidencedString{Value: "Example Protein Full Name"},
 			},
 		},
 		Organism: UniProtOrganism{
@@ -54,9 +55,9 @@ func TestUniProtEntryToString(t *testing.T) {
 	entry := UniProtEntry{
 		Accession: []string{"P12345", "Q67890"},
 		Name:      []string{"Example Protein"},
-		Protein: UniProtProtein{
-			RecommendedName: UniProtRecommendedName{
-				FullName: "Example Protein Full Name",
+		Protein: protein.UniProtProtein{
+			RecommendedName: protein.UniProtRecommendedName{
+				FullName: protein.EvidencedString{Value: "Example Protein Full Name"},
 			},
 		},
 		Organism: UniProtOrganism{
@@ -103,9 +104,9 @@ func TestUniProtXMLReader(t *testing.T) {
 	expectedEntry := &UniProtEntry{
 		Accession: []string{"P0C9F0"},
 		Name:      []string{"1001R_ASFK5"},
-		Protein: UniProtProtein{
-			RecommendedName: UniProtRecommendedName{
-				FullName: "Protein MGF 100-1R",
+		Protein: protein.UniProtProtein{
+			RecommendedName: protein.UniProtRecommendedName{
+				FullName: protein.EvidencedString{Value: "Protein MGF 100-1R"},
 			},
 		},
 		Organism: UniProtOrganism{

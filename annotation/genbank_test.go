@@ -1,11 +1,11 @@
 package annotation
 
 import (
-	"strings"
 	"bufio"
-	"testing"
 	"gopher-proteinlab/parseio"
 	"reflect"
+	"strings"
+	"testing"
 )
 
 func TestParseGenBank(t *testing.T) {
@@ -54,8 +54,8 @@ ORIGIN
 				Key:      "CDS",
 				Location: "109..717",
 				Qualifiers: map[string]string{
-					"/gene":     "sod",
-					"/product":  "superoxide dismutase",
+					"/gene":    "sod",
+					"/product": "superoxide dismutase",
 				},
 			},
 		},

@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"gopher-proteinlab/parseio"
+	"gopher-proteinlab/protein"
 )
 
 // UniProtXML represents the structure of the root element for a UniProt XML file.
@@ -16,30 +17,15 @@ type UniProtXML struct {
 
 // UniProtEntry represents the data for each entry in the UniProt XML file.
 type UniProtEntry struct {
-	Accession  []string           `xml:"accession"`
-	Name       []string           `xml:"name"`
-	Protein    UniProtProtein     `xml:"protein"`
-	Organism   UniProtOrganism    `xml:"organism"`
-	Sequence   UniProtSequence    `xml:"sequence"`
-	Created    string             `xml:"created,attr"`
-	Modified   string             `xml:"modified,attr"`
-	Version    int                `xml:"version,attr"`
-	References []UniProtReference `xml:"reference"`
-}
-
-// UniProtProtein contains the protein information for a UniProt entry.
-type UniProtProtein struct {
-	RecommendedName UniProtRecommendedName `xml:"recommendedName"`
-}
-
-// UniProtRecommendedName holds the recommended full name for a protein.
-type UniProtRecommendedName struct {
-	FullName string `xml:"fullName"`
-}
-
-// UniProtOrganism contains the organism information for a UniProt entry.
-type UniProtOrganism struct {
-	Name []UniProtOrganismName `xml:"name"`
+	Accession  []string               `xml:"accession"`
+	Name       []string               `xml:"name"`
+	Protein    protein.UniProtProtein `xml:"protein"`
+	Organism   protein.Organism        `xml:"organism"`
+	Sequence   UniProtSequence        `xml:"sequence"`
+	Created    string                 `xml:"created,attr"`
+	Modified   string                 `xml:"modified,attr"`
+	Version    int                    `xml:"version,attr"`
+	References []UniProtReference     `xml:"reference"`
 }
 
 // UniProtOrganismName holds the organism name with its type (e.g., scientific or common).

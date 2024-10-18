@@ -47,7 +47,7 @@ func (e UniProtEntry) ToString() string {
 
 	writeField(&words, "Accession: ", strings.Join(e.Accession, ", "))
 	writeField(&words, "Name: ", strings.Join(e.Name, ", "))
-	writeField(&words, "Protein: ", e.Protein.RecommendedName.FullName)
+	writeField(&words, "Protein: ", e.Protein.RecommendedName.FullName.Value)
 
 	parseio.HandleStrBuilder(&words, "Organism: ")
 	for _, name := range e.Organism.Name {
@@ -83,6 +83,7 @@ func (e EMBLEntry) ToString() string {
 	for _, feature := range e.Features {
 		writeField(&sb, "  Key: ", feature.Key)
 		writeField(&sb, "  Location: ", feature.Location)
+		
 		for key, value := range feature.Qualifiers {
 			writeField(&sb, fmt.Sprintf("    %s: ", key), value)
 		}

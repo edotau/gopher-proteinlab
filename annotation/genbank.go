@@ -1,7 +1,6 @@
 package annotation
 
 import (
-
 	"fmt"
 	"strings"
 
@@ -10,16 +9,16 @@ import (
 
 // GenBankEntry represents a parsed GenBank file entry.
 type GenBankEntry struct {
-	Locus      string            // Locus line containing information about the sequence
-	Definition string            // Definition line describing the sequence
-	Accession  []string          // Accession numbers of the sequence
-	Version    string            // Version information of the sequence
-	Keywords   []string          // Keywords associated with the sequence
-	Source     string            // Source organism or cell line for the sequence
-	Organism   string            // Full organism classification of the sequence
+	Locus      string             // Locus line containing information about the sequence
+	Definition string             // Definition line describing the sequence
+	Accession  []string           // Accession numbers of the sequence
+	Version    string             // Version information of the sequence
+	Keywords   []string           // Keywords associated with the sequence
+	Source     string             // Source organism or cell line for the sequence
+	Organism   string             // Full organism classification of the sequence
 	References []GenBankReference // List of references in the sequence
 	Features   []GenBankFeature   // List of features such as genes and coding sequences
-	Sequence   string            // The nucleotide or protein sequence
+	Sequence   string             // The nucleotide or protein sequence
 }
 
 // GenBankFeature represents a feature in a GenBank file.
@@ -50,7 +49,7 @@ func parseGenBank(scanner *parseio.Scanalyzer) (*GenBankEntry, error) {
 		// Use switch case to handle different line types in the GenBank file
 		switch {
 		case strings.HasPrefix(line, "LOCUS"):
-			entry.Locus = strings.Fields(line[12:])[0]  // Capture only the first word
+			entry.Locus = strings.Fields(line[12:])[0] // Capture only the first word
 		case strings.HasPrefix(line, "DEFINITION"):
 			entry.Definition = strings.TrimSpace(line[12:])
 		case strings.HasPrefix(line, "ACCESSION"):
@@ -79,8 +78,6 @@ func parseGenBank(scanner *parseio.Scanalyzer) (*GenBankEntry, error) {
 	return entry, nil
 }
 
-
-
 // readMultiLineOrganism reads multi-line organism information from the GenBank file.
 func readMultiLineOrganism(scanner *parseio.Scanalyzer, line string) string {
 	// Start with the first line of the organism
@@ -94,7 +91,6 @@ func readMultiLineOrganism(scanner *parseio.Scanalyzer, line string) string {
 	}
 	return organism
 }
-
 
 // readReference reads a reference section from the GenBank file and returns a GenBankReference.
 func readReference(scanner *parseio.Scanalyzer, firstLine string) GenBankReference {
@@ -170,7 +166,6 @@ func readFeatures(scanner *parseio.Scanalyzer) []GenBankFeature {
 
 	return features
 }
-
 
 // readSequence reads the sequence data from the GenBank file.
 func readSequence(scanner *parseio.Scanalyzer) string {
