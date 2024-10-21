@@ -26,8 +26,8 @@ func TestSimpleOpen(t *testing.T) {
 		}
 	}()
 
-	// Test SimpleOpen with an invalid file
-	if file := SimpleOpen("nonexistentfile"); file != nil {
+	// Test VimOpen with an invalid file
+	if file := VimOpen("nonexistentfile"); file != nil {
 		t.Errorf("Expected nil, got file")
 	}
 
@@ -35,7 +35,7 @@ func TestSimpleOpen(t *testing.T) {
 	if tmpfile, err := os.Create("testdata/lines.txt"); err == nil {
 		defer os.Remove(tmpfile.Name())
 
-		if file := SimpleOpen(tmpfile.Name()); file == nil {
+		if file := VimOpen(tmpfile.Name()); file == nil {
 			t.Errorf("Expected file, got nil")
 		} else {
 			ExitOnError(file.Close())
@@ -55,4 +55,38 @@ func TestIsGzip(t *testing.T) {
 			t.Fatalf("Failed to write to gzip writer: %v", err)
 		}
 	}
+}
+
+func TestScanalyzer(t *testing.T) {
+	scanner := NewScanner("testdata/uniprot-test.dat.gz")
+	if err := scanner.Close(); err != nil {
+		t.Errorf("Error: Expected scanner.Close() with no error. %v", err)
+	}
+}
+func TestNewScannerio(t *testing.T) {
+	var lines []string
+	if tmpfile, err := os.Create("testdata/lines.txt"); ExitOnError(err) {
+		defer os.Remove(tmpfile.Name())
+
+		if _, err = tmpfile.WriteString("line1\nline2\nline3\n"); ExitOnError(err) {
+			t.Logf("Error: tmpfile.WriteString() = %v\n", err)
+		}
+
+		scanner := NewScanner(tmpfile.Name())
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+
+		expected := []string{"line1", "line2", "line3"}
+
+		if len(lines) != len(expected) {
+			t.Errorf("Error: number of lines do not match %v, %v", len(lines), len(expected))
+		}
+		for i := 0; i < len(lines); i++ {
+			if lines[i] != expected[i] {
+				t.Errorf("Error: NewScannerio() is not parsing the lines correctly.'n")
+			}
+		}
+	}
+
 }

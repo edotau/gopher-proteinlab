@@ -15,8 +15,14 @@ type CodeReader struct {
 	close func() error
 }
 
-// SimpleOpen opens a file and returns the file handle.
-func SimpleOpen(filename string) *os.File {
+// Scanalyzer structwraps around bufio.Scanner and adds a close method.
+type Scanalyzer struct {
+	*bufio.Scanner
+	close func() error
+}
+
+// VimOpen opens a file and it handles errors gracefully.
+func VimOpen(filename string) *os.File {
 	if file, err := os.Open(filename); ExitOnError(err) {
 		return file
 	}
@@ -41,7 +47,7 @@ func IsGzip(reader *bufio.Reader) bool {
 
 // FileHandler opens a file string path and handles any errors including gzipped files.
 func FileHandler(filename string) (*bufio.Reader, *os.File) {
-	file := SimpleOpen(filename)
+	file := VimOpen(filename)
 	reader := bufio.NewReader(file)
 
 	if IsGzip(reader) {
@@ -59,11 +65,33 @@ func NewCodeReader(filename string) *CodeReader {
 	}
 }
 
+// NewScanner creates a new Scanalyzer scanner.
+func NewScanner(filename string) *Scanalyzer {
+	reader, file := FileHandler(filename)
+
+	return &Scanalyzer{
+		Scanner: bufio.NewScanner(reader),
+		close:   file.Close,
+	}
+}
+
+// Read implements io.Reader, reading data into b from the file or gzip stream.
+func (reader *CodeReader) Read(b []byte) (n int, err error) {
+	return reader.Reader.Read(b)
+}
 
 // Close is the method to close the underlying resource, such as a file.
 func (r *CodeReader) Close() error {
 	if r.close != nil {
 		return r.close()
+	}
+	return nil
+}
+
+// Close is the method to close the underlying resource, such as a file.
+func (s *Scanalyzer) Close() error {
+	if s.close != nil {
+		return s.close()
 	}
 	return nil
 }
