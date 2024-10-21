@@ -4,24 +4,23 @@ import (
 	"fmt"
 	"io"
 
-
 	"gopher-proteinlab/parseio"
 	"strings"
 )
 
 // EMBLEntry represents the structure of an EMBL file entry.
 type EMBLEntry struct {
-	ID        string         `json:"id"`
-	Accession []string       `json:"accession"`
-	Keywords  []string       `json:"keywords"`
-	Source    string         `json:"source"`
-	Features  []Feature  	`json:"features"`
-	Sequence  string         `json:"sequence"`
+	ID        string    `json:"id"`
+	Accession []string  `json:"accession"`
+	Keywords  []string  `json:"keywords"`
+	Source    string    `json:"source"`
+	Features  []Feature `json:"features"`
+	Sequence  string    `json:"sequence"`
 }
 
 // EMBLReader reads an EMBL .dat file, decodes its content, and returns the parsed data one entry at a time.
 func EMBLReader(filename string) {
-	emblScanner := parseio.NewScanner(filename)// This will be a wrapper around bufio.Scanner
+	emblScanner := parseio.NewScanner(filename) // This will be a wrapper around bufio.Scanner
 	defer emblScanner.Close()
 	for {
 		// Parse each entry and process it
@@ -45,12 +44,12 @@ func parseEMBL(scanner *parseio.Scanalyzer) (*EMBLEntry, error) {
 
 		// ID line (entry ID)
 		if strings.HasPrefix(line, "ID") {
-			entry.ID = strings.TrimSpace(line[5:])
+			entry.ID = strings.TrimRight(strings.TrimSpace(line[5:]), ";")
 		}
 
 		// AC line (accession numbers)
 		if strings.HasPrefix(line, "AC") {
-			accessions := strings.Split(line[5:], ";")
+			accessions := strings.Split(strings.TrimRight(line[5:], ";"), ";")
 			for _, acc := range accessions {
 				entry.Accession = append(entry.Accession, strings.TrimSpace(acc))
 			}
@@ -58,7 +57,7 @@ func parseEMBL(scanner *parseio.Scanalyzer) (*EMBLEntry, error) {
 
 		// KW line (keywords)
 		if strings.HasPrefix(line, "KW") {
-			keywords := strings.Split(line[5:], ";")
+			keywords := strings.Split(strings.TrimRight(line[5:], ";"), ";")
 			for _, keyword := range keywords {
 				entry.Keywords = append(entry.Keywords, strings.TrimSpace(keyword))
 			}
@@ -116,7 +115,6 @@ func parseEMBL(scanner *parseio.Scanalyzer) (*EMBLEntry, error) {
 
 	return entry, nil
 }
-
 
 // EqualEmblEntry is a helper function to compare two EMBLEntry structs.
 func EqualEmblEntry(e1, e2 *EMBLEntry) bool {
