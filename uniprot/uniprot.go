@@ -152,7 +152,7 @@ type Feature struct {
 	Type        string   `xml:"type,attr"`
 	ID          string   `xml:"id,attr,omitempty"`
 	Description string   `xml:"description,attr,omitempty"`
-	Evidence    []int    `xml:"evidence,attr,omitempty"`
+	Evidence    string    `xml:"evidence,attr,omitempty"`
 	Location    Location `xml:"location"`
 }
 
