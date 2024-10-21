@@ -5,31 +5,6 @@ import (
 	"gopher-proteinlab/parseio"
 )
 
-// ProteinNameGroup definition
-type ProteinName struct {
-	FullName  NameEntry   `xml:"fullName"`
-	ShortName []NameEntry `xml:"shortName,omitempty"`
-	ECNumber  []NameEntry `xml:"ecNumber,omitempty"`
-}
-
-// ProteinEntry if the protein xml definition.
-type ProteinEntry struct {
-	RecommendedName *ProteinName  `xml:"recommendedName,omitempty"`
-	AlternativeName []ProteinName `xml:"alternativeName,omitempty"`
-	SubmittedName   []ProteinName `xml:"submittedName,omitempty"`
-	Domain          []ProteinName `xml:"domain,omitempty"`
-	Component       []ProteinName `xml:"component,omitempty"`
-	AllergenName    *NameEntry    `xml:"allergenName,omitempty"`
-	BiotechName     *NameEntry    `xml:"biotechName,omitempty"`
-	CDAntigenNames  []NameEntry   `xml:"cdAntigenName,omitempty"`
-	InnNames        []NameEntry   `xml:"innName,omitempty"`
-}
-
-// ProteinExistenceType definition
-type ProteinExistence struct {
-	Type string `xml:"type,attr"`
-}
-
 func (e *ProteinEntry) ToJson() string {
 	txt := parseio.NewTxtBuilder()
 	data, err := json.MarshalIndent(e, "", "  ")
@@ -86,17 +61,10 @@ func (alpha ProteinName) Equal(beta ProteinName) bool {
 
 func (alpha ProteinEntry) Equal(beta ProteinEntry) bool {
 	// Compare RecommendedName, which is a pointer
-	if (alpha.RecommendedName == nil) != (beta.RecommendedName == nil) {
-		return false
-	}
-	if alpha.RecommendedName != nil && !alpha.RecommendedName.Equal(*beta.RecommendedName) {
+	if !alpha.RecommendedName.Equal(beta.RecommendedName) {
 		return false
 	}
 
-	// Compare AlternativeName slices
-	if len(alpha.AlternativeName) != len(beta.AlternativeName) {
-		return false
-	}
 	for i := range alpha.AlternativeName {
 		if !alpha.AlternativeName[i].Equal(beta.AlternativeName[i]) {
 			return false

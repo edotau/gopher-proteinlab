@@ -10,10 +10,10 @@ import (
 func TestUniProtXMLReader(t *testing.T) {
 	// Parse the date strings to time.Time format
 	expectedEntry := Entry{
-		Accession: []string{"P0C9F0"},
-		Name:      []string{"1001R_ASFK5"},
+		Accession: "P0C9F0",
+		Name:      "1001R_ASFK5",
 		Protein: ProteinEntry{
-			RecommendedName: &ProteinName{
+			RecommendedName: ProteinName{
 				FullName: NameEntry{Value: "Protein MGF 100-1R"},
 			},
 		},

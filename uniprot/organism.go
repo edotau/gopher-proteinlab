@@ -1,27 +1,5 @@
 package uniprot
 
-// OrganismType definition
-type Organism struct {
-	Name        []NameEntry   `xml:"name"`
-	DBReference []DBReference `xml:"dbReference"`
-	Lineage     *Lineage      `xml:"lineage,omitempty"`
-	Evidence    []int         `xml:"evidence,attr,omitempty"`
-}
-
-// DBReferenceType definition
-type DBReference struct {
-	Type     string     `xml:"type,attr"`
-	ID       string     `xml:"id,attr"`
-	Molecule *Molecule  `xml:"molecule,omitempty"`
-	Property []Property `xml:"property,omitempty"`
-	Evidence []int      `xml:"evidence,attr,omitempty"`
-}
-
-// Lineage definition
-type Lineage struct {
-	Taxon []string `xml:"taxon"`
-}
-
 func (alpha Organism) Equal(beta Organism) bool {
 	// Compare Evidence slices
 	if len(alpha.Evidence) != len(beta.Evidence) {

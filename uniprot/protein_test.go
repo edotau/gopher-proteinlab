@@ -26,7 +26,7 @@ func TestUniProtProteinEntry(t *testing.T) {
 	`
 
 	expected := ProteinEntry{
-		RecommendedName: &ProteinName{
+		RecommendedName: ProteinName{
 			FullName:  NameEntry{Value: "Example Protein Full Name"},
 			ShortName: []NameEntry{{Value: "Example Short Name"}},
 			ECNumber:  []NameEntry{{Value: "1.1.1.1"}},

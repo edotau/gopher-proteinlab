@@ -17,8 +17,8 @@ type Uniprot struct {
 
 // Entry definition
 type Entry struct {
-	Accession        []string         `xml:"accession"`
-	Name             []string         `xml:"name"`
+	Accession        string         `xml:"accession"`
+	Name             string         `xml:"name"`
 	Protein          ProteinEntry     `xml:"protein"`
 	Gene             []Gene           `xml:"gene,omitempty"`
 	Organism         Organism         `xml:"organism"`
@@ -45,6 +45,31 @@ type NameEntry struct {
 	Value    string `xml:",chardata"`               // The actual value of the name
 }
 
+// ProteinNameGroup definition
+type ProteinName struct {
+	FullName  NameEntry   `xml:"fullName"`
+	ShortName []NameEntry `xml:"shortName,omitempty"`
+	ECNumber  []NameEntry `xml:"ecNumber,omitempty"`
+}
+
+// ProteinEntry if the protein xml definition.
+type ProteinEntry struct {
+	RecommendedName ProteinName  `xml:"recommendedName,omitempty"`
+	AlternativeName []ProteinName `xml:"alternativeName,omitempty"`
+	SubmittedName   []ProteinName `xml:"submittedName,omitempty"`
+	Domain          []ProteinName `xml:"domain,omitempty"`
+	Component       []ProteinName `xml:"component,omitempty"`
+	AllergenName    *NameEntry    `xml:"allergenName,omitempty"`
+	BiotechName     *NameEntry    `xml:"biotechName,omitempty"`
+	CDAntigenNames  []NameEntry   `xml:"cdAntigenName,omitempty"`
+	InnNames        []NameEntry   `xml:"innName,omitempty"`
+}
+
+// ProteinExistenceType definition
+type ProteinExistence struct {
+	Type string `xml:"type,attr"`
+}
+
 // Gene represents a gene element.
 type Gene struct {
 	Name []NameEntry `xml:"name"`
@@ -55,6 +80,28 @@ type GeneLocation struct {
 	Type     string      `xml:"type,attr"`
 	Name     []NameEntry `xml:"name,omitempty"`
 	Evidence []int       `xml:"evidence,attr,omitempty"`
+}
+
+// OrganismType definition
+type Organism struct {
+	Name        []NameEntry   `xml:"name"`
+	DBReference []DBReference `xml:"dbReference"`
+	Lineage     *Lineage      `xml:"lineage,omitempty"`
+	Evidence    []int         `xml:"evidence,attr,omitempty"`
+}
+
+// DBReferenceType definition
+type DBReference struct {
+	Type     string     `xml:"type,attr"`
+	ID       string     `xml:"id,attr"`
+	Molecule *Molecule  `xml:"molecule,omitempty"`
+	Property []Property `xml:"property,omitempty"`
+	Evidence []int      `xml:"evidence,attr,omitempty"`
+}
+
+// Lineage definition
+type Lineage struct {
+	Taxon []string `xml:"taxon"`
 }
 
 // Reference definition
@@ -136,13 +183,13 @@ type Sequence struct {
 type Evidence struct {
 	Type         string       `xml:"type,attr"`
 	Key          int          `xml:"key,attr"`
-	Source       *Source      `xml:"source,omitempty"`
-	ImportedFrom *DBReference `xml:"importedFrom,omitempty"`
+	Source       Source      `xml:"source,omitempty"`
+	ImportedFrom DBReference `xml:"importedFrom,omitempty"`
 }
 
 // SourceType definition
 type Source struct {
-	DBReference *DBReference `xml:"dbReference,omitempty"`
+	DBReference DBReference `xml:"dbReference,omitempty"`
 	Ref         int          `xml:"ref,attr,omitempty"`
 }
 
@@ -164,14 +211,14 @@ func UniProtXMLReader(filename string) {
 
 	// Iterate through the tokens in the XML file
 	decoder := xml.NewDecoder(xmlReader)
-	for entry, err := parseUniProt(decoder); err != io.EOF; entry, err = parseUniProt(decoder) {
+	for entry, err := ParseUniProt(decoder); err != io.EOF; entry, err = ParseUniProt(decoder) {
 		parseio.ExitOnError(err)
 		fmt.Println(entry)
 	}
 }
 
-// parseUniProt parses the UniProt XML file for individual entries.
-func parseUniProt(decoder *xml.Decoder) (*Entry, error) {
+// ParseUniProt parses the UniProt XML file for individual entries.
+func ParseUniProt(decoder *xml.Decoder) (*Entry, error) {
 	for {
 		if tok, err := decoder.Token(); parseio.ExitOnError(err) {
 			switch se := tok.(type) {
