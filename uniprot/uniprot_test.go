@@ -112,13 +112,13 @@ func TestUniProtXMLReader(t *testing.T) {
 			{
 				Type: "function",
 				Text: []NameEntry{
-					{Value: "Plays a role in virus cell tropism, and may be required for efficient virus replication in macrophages.", Evidence: []int{1}},
+					{Value: "Plays a role in virus cell tropism, and may be required for efficient virus replication in macrophages.", Evidence: "1"},
 				},
 			},
 			{
 				Type: "similarity",
 				Text: []NameEntry{
-					{Value: "Belongs to the asfivirus MGF 100 family.", Evidence: []int{2}},
+					{Value: "Belongs to the asfivirus MGF 100 family.", Evidence: "2"},
 				},
 			},
 		},

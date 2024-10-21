@@ -21,14 +21,8 @@ func (alpha NameEntry) Equal(beta NameEntry) bool {
 	if alpha.Type != beta.Type {
 		return false
 	}
-	if len(alpha.Evidence) != len(beta.Evidence) {
+	if alpha.Evidence != beta.Evidence {
 		return false
-	} else {
-		for i, v := range alpha.Evidence {
-			if v != beta.Evidence[i] {
-				return false
-			}
-		}
 	}
 	return true
 }

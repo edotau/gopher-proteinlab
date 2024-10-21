@@ -17,8 +17,8 @@ type Uniprot struct {
 
 // Entry definition
 type Entry struct {
-	Accession        string         `xml:"accession"`
-	Name             string         `xml:"name"`
+	Accession        string           `xml:"accession"`
+	Name             string           `xml:"name"`
 	Protein          ProteinEntry     `xml:"protein"`
 	Gene             []Gene           `xml:"gene,omitempty"`
 	Organism         Organism         `xml:"organism"`
@@ -41,7 +41,7 @@ type Entry struct {
 // NameEntry represents a general name entry for both protein and gene names.
 type NameEntry struct {
 	Type     string `xml:"type,attr,omitempty"`     // Optional field for gene names
-	Evidence []int  `xml:"evidence,attr,omitempty"` // Evidence is common in both cases
+	Evidence string `xml:"evidence,attr,omitempty"` // Evidence is common in both cases
 	Value    string `xml:",chardata"`               // The actual value of the name
 }
 
@@ -54,7 +54,7 @@ type ProteinName struct {
 
 // ProteinEntry if the protein xml definition.
 type ProteinEntry struct {
-	RecommendedName ProteinName  `xml:"recommendedName,omitempty"`
+	RecommendedName ProteinName   `xml:"recommendedName,omitempty"`
 	AlternativeName []ProteinName `xml:"alternativeName,omitempty"`
 	SubmittedName   []ProteinName `xml:"submittedName,omitempty"`
 	Domain          []ProteinName `xml:"domain,omitempty"`
@@ -79,7 +79,7 @@ type Gene struct {
 type GeneLocation struct {
 	Type     string      `xml:"type,attr"`
 	Name     []NameEntry `xml:"name,omitempty"`
-	Evidence []int       `xml:"evidence,attr,omitempty"`
+	Evidence string      `xml:"evidence,attr,omitempty"`
 }
 
 // OrganismType definition
@@ -96,7 +96,7 @@ type DBReference struct {
 	ID       string     `xml:"id,attr"`
 	Molecule *Molecule  `xml:"molecule,omitempty"`
 	Property []Property `xml:"property,omitempty"`
-	Evidence []int      `xml:"evidence,attr,omitempty"`
+	Evidence string     `xml:"evidence,attr,omitempty"`
 }
 
 // Lineage definition
@@ -109,7 +109,7 @@ type Reference struct {
 	Citation Citation `xml:"citation"`
 	Scope    []string `xml:"scope"`
 	Source   *Source  `xml:"source,omitempty"`
-	Evidence []int    `xml:"evidence,attr,omitempty"`
+	Evidence string   `xml:"evidence,attr,omitempty"`
 	Key      string   `xml:"key,attr"`
 }
 
@@ -143,7 +143,7 @@ type Property struct {
 // KeywordType definition
 type Keyword struct {
 	ID       string `xml:"id,attr"`
-	Evidence []int  `xml:"evidence,attr,omitempty"`
+	Evidence string `xml:"evidence,attr,omitempty"`
 	Value    string `xml:",chardata"`
 }
 
@@ -181,8 +181,8 @@ type Sequence struct {
 
 // EvidenceType definition
 type Evidence struct {
-	Type         string       `xml:"type,attr"`
-	Key          int          `xml:"key,attr"`
+	Type         string      `xml:"type,attr"`
+	Key          int         `xml:"key,attr"`
 	Source       Source      `xml:"source,omitempty"`
 	ImportedFrom DBReference `xml:"importedFrom,omitempty"`
 }
@@ -190,7 +190,7 @@ type Evidence struct {
 // SourceType definition
 type Source struct {
 	DBReference DBReference `xml:"dbReference,omitempty"`
-	Ref         int          `xml:"ref,attr,omitempty"`
+	Ref         int         `xml:"ref,attr,omitempty"`
 }
 
 // PersonType definition
