@@ -87,7 +87,7 @@ type Organism struct {
 	Name        []NameEntry   `xml:"name"`
 	DBReference []DBReference `xml:"dbReference"`
 	Lineage     *Lineage      `xml:"lineage,omitempty"`
-	Evidence    []int         `xml:"evidence,attr,omitempty"`
+	Evidence    string        `xml:"evidence,attr,omitempty"`
 }
 
 // DBReferenceType definition

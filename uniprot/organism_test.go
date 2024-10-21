@@ -25,7 +25,7 @@ func TestOrganismXMLParsing(t *testing.T) {
 	</organism>`
 
 	expected := Organism{
-		Evidence: []int{1},
+		Evidence: "1",
 		Name: []NameEntry{
 			{Type: "scientific", Value: "Homo sapiens"},
 			{Type: "common", Value: "Human"},
