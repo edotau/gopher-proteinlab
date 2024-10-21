@@ -14,15 +14,6 @@ type Entry interface {
 	ToString() string
 }
 
-// ToJson converts a UniProtEntry to a JSON-formatted string.
-func (e *UniProtEntry) ToJson() string {
-	data, err := json.MarshalIndent(e, "", "  ")
-	if err != nil {
-		fmt.Printf("Error marshaling to JSON: %v", err)
-	}
-	return string(data)
-}
-
 // ToJson converts an EMBLEntry to a JSON-formatted string.
 func (e *EMBLEntry) ToJson() string {
 	data, err := json.MarshalIndent(e, "", "  ")
@@ -41,37 +32,6 @@ func (e *GenBankEntry) ToJson() string {
 	return string(data)
 }
 
-// ToString returns a string representation of the UniProtEntry struct.
-func (e UniProtEntry) ToString() string {
-	var words strings.Builder
-
-	writeField(&words, "Accession: ", strings.Join(e.Accession, ", "))
-	writeField(&words, "Name: ", strings.Join(e.Name, ", "))
-	writeField(&words, "Protein: ", e.Protein.RecommendedName.FullName.Value)
-
-	parseio.HandleStrBuilder(&words, "Organism: ")
-	for _, name := range e.Organism.Name {
-		parseio.HandleStrBuilder(&words, name.Type)
-		parseio.HandleStrBuilder(&words, ": ")
-		parseio.HandleStrBuilder(&words, name.Name)
-		parseio.HandleStrBuilder(&words, "; ")
-	}
-	parseio.ExitOnError(words.WriteByte('\n'))
-
-	writeField(&words, "Sequence: ", e.Sequence.Value)
-	writeField(&words, "Created: ", e.Created)
-	writeField(&words, "Modified: ", e.Modified)
-	writeField(&words, "Version: ", fmt.Sprintf("%d", e.Version))
-
-	parseio.HandleStrBuilder(&words, "References: ")
-	for _, ref := range e.References {
-		parseio.HandleStrBuilder(&words, ref.Citation.Title)
-		parseio.HandleStrBuilder(&words, "; ")
-	}
-	parseio.ExitOnError(words.WriteByte('\n'))
-	return words.String()
-}
-
 // ToString converts an EMBLEntry to a string.
 func (e EMBLEntry) ToString() string {
 	var sb strings.Builder
@@ -83,7 +43,7 @@ func (e EMBLEntry) ToString() string {
 	for _, feature := range e.Features {
 		writeField(&sb, "  Key: ", feature.Key)
 		writeField(&sb, "  Location: ", feature.Location)
-		
+
 		for key, value := range feature.Qualifiers {
 			writeField(&sb, fmt.Sprintf("    %s: ", key), value)
 		}
@@ -120,9 +80,7 @@ func (e GenBankEntry) ToString() string {
 			writeField(fmt.Sprintf("    %s: ", key), value)
 		}
 	}
-
 	writeField("Sequence: ", e.Sequence)
-
 	return sb.String()
 }
 
