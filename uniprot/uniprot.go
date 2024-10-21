@@ -56,7 +56,7 @@ type ProteinName struct {
 type ProteinEntry struct {
 	RecommendedName ProteinName   `xml:"recommendedName,omitempty"`
 	AlternativeName []ProteinName `xml:"alternativeName,omitempty"`
-	SubmittedName   []ProteinName `xml:"submittedName,omitempty"`
+	SubmittedName   ProteinName   `xml:"submittedName,omitempty"`
 	Domain          []ProteinName `xml:"domain,omitempty"`
 	Component       []ProteinName `xml:"component,omitempty"`
 	AllergenName    *NameEntry    `xml:"allergenName,omitempty"`

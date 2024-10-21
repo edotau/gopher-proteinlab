@@ -37,11 +37,9 @@ func TestUniProtProteinEntry(t *testing.T) {
 				ShortName: []NameEntry{{Value: "Alt Short Name"}},
 			},
 		},
-		SubmittedName: []ProteinName{
-			{
-				FullName: NameEntry{Value: "Submitted Full Name"},
-				ECNumber: []NameEntry{{Value: "2.2.2.2"}},
-			},
+		SubmittedName: ProteinName{
+			FullName: NameEntry{Value: "Submitted Full Name"},
+			ECNumber: []NameEntry{{Value: "2.2.2.2"}},
 		},
 	}
 

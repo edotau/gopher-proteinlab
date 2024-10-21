@@ -66,13 +66,8 @@ func (alpha ProteinEntry) Equal(beta ProteinEntry) bool {
 	}
 
 	// Compare SubmittedName slices
-	if len(alpha.SubmittedName) != len(beta.SubmittedName) {
+	if !alpha.SubmittedName.Equal(beta.SubmittedName) {
 		return false
-	}
-	for i := range alpha.SubmittedName {
-		if !alpha.SubmittedName[i].Equal(beta.SubmittedName[i]) {
-			return false
-		}
 	}
 
 	// Compare Domain slices
