@@ -62,7 +62,6 @@ func writeResults(inputFilename, outputFilePath string) error {
 			break // End of file reached
 		}
 		writeTsv(tsvFile, processXml(entry))
-		parseio.ExitOnError(err)
 	}
 	
 	writeTsv(tsvFile, "\n")

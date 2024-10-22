@@ -3,7 +3,6 @@ package uniprot
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"gopher-proteinlab/parseio"
 	"io"
 )
@@ -217,9 +216,7 @@ func UniProtXMLReader(filename string) {
 		if err == io.EOF {
 			break // End of file reached
 		}
-		parseio.ExitOnError(err)
 		// Process the entry, e.g., print or store it
-		fmt.Println(entry.ToJson())
 	}
 }
 
