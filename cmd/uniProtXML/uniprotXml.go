@@ -5,7 +5,6 @@ import (
 
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -51,34 +50,16 @@ func writeResults(inputFilename, outputFilePath string) error {
 	xmlReader := parseio.NewCodeReader(inputFilename)
 	defer xmlReader.Close()
 	
-	faFile := fileio.EasyCreate(outputFilePath+".fa.gz")
-	
-
 	tsvFile := fileio.EasyCreate(outputFilePath+".tsv.gz")
-
+	writeTsv(tsvFile, "Accession\tDataset\tName\tSequence\n")
+	
 	decoder := xml.NewDecoder(xmlReader)
-
-	_, err := fmt.Fprint(tsvFile, "Accession\tDataset\tName\tSequence\n")
-	parseio.ExitOnError(err)
-	
-	for entry, err := uniprot.ParseUniProt(decoder); err != io.EOF ; entry, err = uniprot.ParseUniProt(decoder){
-		// Iterate through the tokens in the XML file
-		parseio.ExitOnError(err)
-
+	for entry, err := uniprot.ParseUniProt(decoder); parseio.CatchEofErr(err); entry, err = uniprot.ParseUniProt(decoder){
 		writeTsv(tsvFile, processXml(entry))
-		writeFasta(faFile, Fasta{Name: entry.Accession, Seq: entry.Sequence.Value}, 50) 
-		processXml(entry)
-
 	}
-	writeTsv(tsvFile, "\n")
-	_, err = fmt.Fprint(faFile, "\n")
-	parseio.ExitOnError(err)
-	faFile.Close()
-	tsvFile.Close()
-
-
 	
-
+	writeTsv(tsvFile, "\n")
+	tsvFile.Close()
 	return nil
 }
 
