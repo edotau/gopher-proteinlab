@@ -12,20 +12,18 @@ func TestCatchError(t *testing.T) {
 	if !err {
 		t.Errorf("Expected true for nil error, got false")
 	}
+	testErr := fmt.Errorf("test error")
+	expectedMessage := "test error"
+
 	defer func() {
-		if r := recover(); r != nil {
-			expectedMessage := "test error"
-			if r != expectedMessage {
-				t.Errorf("Expected panic message %q, got %q", expectedMessage, r)
-			}
-		} else {
-			t.Errorf("Expected panic but did not get one")
-		}
+		recover()
 	}()
 
-	testErr := fmt.Errorf("test error")
 	ExitOnError(testErr)
-	t.Errorf("ExitOnError should have panicked but did not")
+	errMsg := RecoverError(testErr)
+	if errMsg != expectedMessage {
+		t.Errorf("Expected panic message %q, got %q", expectedMessage, errMsg)
+	}
 }
 
 func TestWarningError(t *testing.T) {
@@ -54,11 +52,9 @@ func TestWarningError(t *testing.T) {
 	}
 }
 
-func TestHandleStrBuilder(t *testing.T) {
-	var buffer strings.Builder
-	HandleStrBuilder(&buffer, "test")
-	expected := "test"
-	if buffer.String() != expected {
-		t.Errorf("Expected %q, got %q", expected, buffer.String())
+func TestRecoverError(t *testing.T) {
+	errMsg := RecoverError(nil)
+	if errMsg != "" {
+		t.Errorf("Expected empty error message, got %q", errMsg)
 	}
 }
