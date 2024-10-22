@@ -211,28 +211,37 @@ func UniProtXMLReader(filename string) {
 
 	// Iterate through the tokens in the XML file
 	decoder := xml.NewDecoder(xmlReader)
-	for entry, err := ParseUniProt(decoder); err != io.EOF; entry, err = ParseUniProt(decoder) {
+	for {
+		// Parse each entry and process it
+		entry, err := ParseUniProt(decoder)
+		if err == io.EOF {
+			break // End of file reached
+		}
 		parseio.ExitOnError(err)
-		fmt.Println(entry)
+		// Process the entry, e.g., print or store it
+		fmt.Println(entry.ToJson())
 	}
 }
 
 // ParseUniProt parses the UniProt XML file for individual entries.
 func ParseUniProt(decoder *xml.Decoder) (*Entry, error) {
-	for {
-		if tok, err := decoder.Token(); parseio.ExitOnError(err) {
-			switch se := tok.(type) {
-			case xml.StartElement:
-				if se.Name.Local == "entry" {
-					var entry Entry
-					if err = decoder.DecodeElement(&entry, &se); err != nil {
-						return nil, err
-					}
-					return &entry, nil
-				}
-			}
-		}
-	}
+    for {
+        tok, err := decoder.Token()
+        if err != nil {
+            return nil, err // Return the error instead of exiting
+        }
+
+        switch se := tok.(type) {
+        case xml.StartElement:
+            if se.Name.Local == "entry" {
+                var entry Entry
+                if err = decoder.DecodeElement(&entry, &se); err != nil {
+                    return nil, err
+                }
+                return &entry, nil
+            }
+        }
+    }
 }
 
 // ToXmlString converts a UniProtEntry to an XML-formatted string.
