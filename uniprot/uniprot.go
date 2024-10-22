@@ -152,7 +152,7 @@ type Feature struct {
 	Type        string   `xml:"type,attr"`
 	ID          string   `xml:"id,attr,omitempty"`
 	Description string   `xml:"description,attr,omitempty"`
-	Evidence    string    `xml:"evidence,attr,omitempty"`
+	Evidence    string   `xml:"evidence,attr,omitempty"`
 	Location    Location `xml:"location"`
 }
 
@@ -224,23 +224,23 @@ func UniProtXMLReader(filename string) {
 
 // ParseUniProt parses the UniProt XML file for individual entries.
 func ParseUniProt(decoder *xml.Decoder) (*Entry, error) {
-    for {
-        tok, err := decoder.Token()
-        if err != nil {
-            return nil, err // Return the error instead of exiting
-        }
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			return nil, err // Return the error instead of exiting
+		}
 
-        switch se := tok.(type) {
-        case xml.StartElement:
-            if se.Name.Local == "entry" {
-                var entry Entry
-                if err = decoder.DecodeElement(&entry, &se); err != nil {
-                    return nil, err
-                }
-                return &entry, nil
-            }
-        }
-    }
+		switch se := tok.(type) {
+		case xml.StartElement:
+			if se.Name.Local == "entry" {
+				var entry Entry
+				if err = decoder.DecodeElement(&entry, &se); err != nil {
+					return nil, err
+				}
+				return &entry, nil
+			}
+		}
+	}
 }
 
 // ToXmlString converts a UniProtEntry to an XML-formatted string.

@@ -2,10 +2,9 @@ package main
 
 import (
 	"encoding/xml"
-	"io"
-
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -46,21 +45,23 @@ func writeTsv(file *fileio.EasyWriter, row string) {
 	parseio.ExitOnError(err)
 }
 
-// writeResults reads a XML file from UniProtand writes FASTA records directly to the output file
-func writeResults(inputFilename, outputFilePath string) error {
+// writeResults reads a XML file from UniProt and writes TSV and FASTA records to respective output files
+func writeResults(inputFilename, tableDir, seqDir, outputFileBase string) error {
 	xmlReader := parseio.NewCodeReader(inputFilename)
 	defer xmlReader.Close()
 
-	tsvFile := fileio.EasyCreate(outputFilePath + ".tsv.gz")
+	// Create TSV file in the tables directory
+	tsvFile := fileio.EasyCreate(filepath.Join(tableDir, outputFileBase+".tsv.gz"))
 	defer tsvFile.Close()
 
-	faFile := fileio.EasyCreate(outputFilePath + ".fa.gz")
+	// Create FASTA file in the sequences directory
+	faFile := fileio.EasyCreate(filepath.Join(seqDir, outputFileBase+".fa.gz"))
 	defer faFile.Close()
 
 	writeTsv(tsvFile, "Accession\tDataset\tName\tTaxon\tSequence\n")
 
 	decoder := xml.NewDecoder(xmlReader)
-	
+
 	for {
 		entry, err := uniprot.ParseUniProt(decoder)
 		if err == io.EOF {
@@ -70,9 +71,11 @@ func writeResults(inputFilename, outputFilePath string) error {
 			return err // Return any other errors encountered during parsing
 		}
 
+		// Write TSV and FASTA entries
 		writeTsv(tsvFile, processXml(entry))
 		writeFasta(faFile, Fasta{Name: entry.Name, Seq: entry.Sequence.Value})
 	}
+
 	return nil
 }
 
@@ -108,15 +111,15 @@ func processXml(entry *uniprot.Entry) string {
 }
 
 // worker is the function that processes files passed through the jobs channel
-func worker(jobs <-chan string, suffix string, wg *sync.WaitGroup) {
+func worker(jobs <-chan string, tableDir, seqDir, suffix string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for inputFilePath := range jobs {
-		outputFilePath := strings.TrimSuffix(filepath.Base(inputFilePath), suffix)
-		
+		outputFileBase := strings.TrimSuffix(filepath.Base(inputFilePath), suffix)
+
 		log.Printf("Processing file: %s", inputFilePath)
-		err := writeResults(inputFilePath, outputFilePath)
-		
+		err := writeResults(inputFilePath, tableDir, seqDir, outputFileBase)
+
 		if err != nil {
 			log.Printf("Error processing file %s: %v", inputFilePath, err)
 		}
@@ -125,6 +128,16 @@ func worker(jobs <-chan string, suffix string, wg *sync.WaitGroup) {
 
 // processDirectory reads all files from a directory with a given suffix and processes each one concurrently using limited workers
 func processDirectory(directory, suffix string) error {
+	// Create 'tables' and 'sequences' directories if they don't exist
+	tableDir := filepath.Join(directory, "tables")
+	seqDir := filepath.Join(directory, "sequences")
+	if err := os.MkdirAll(tableDir, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", tableDir, err)
+	}
+	if err := os.MkdirAll(seqDir, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", seqDir, err)
+	}
+
 	files, err := os.ReadDir(directory)
 	if err != nil {
 		return fmt.Errorf("failed to read directory %s: %w", directory, err)
@@ -138,7 +151,7 @@ func processDirectory(directory, suffix string) error {
 	// Start worker goroutines
 	for i := 0; i < numCPUs; i++ {
 		wg.Add(1)
-		go worker(jobs, suffix, &wg)
+		go worker(jobs, tableDir, seqDir, suffix, &wg)
 	}
 
 	// Enqueue jobs (files) for the workers
