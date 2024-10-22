@@ -26,16 +26,16 @@ type Fasta struct {
 }
 
 // writeFasta writes a single FASTA record to the provided writer in a wrapped line format
-func writeFasta(file *fileio.EasyWriter, rec Fasta, lineLength int) {
+func writeFasta(file *fileio.EasyWriter, rec Fasta) {
 	var err error
 	_, err = fmt.Fprintf(file, ">%s\n", rec.Name)
 	parseio.ExitOnError(err)
-	for i := 0; i < len(rec.Seq); i += lineLength {
-		if i+lineLength > len(rec.Seq) {
+	for i := 0; i < len(rec.Seq); i += 50 {
+		if i+50 > len(rec.Seq) {
 			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:])
 			parseio.ExitOnError(err)
 		} else {
-			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:i+lineLength])
+			_, err = fmt.Fprintf(file, "%s\n", rec.Seq[i:i+50])
 			parseio.ExitOnError(err)
 		}
 	}
@@ -54,9 +54,13 @@ func writeResults(inputFilename, outputFilePath string) error {
 	tsvFile := fileio.EasyCreate(outputFilePath + ".tsv.gz")
 	defer tsvFile.Close()
 
-	writeTsv(tsvFile, "Accession\tDataset\tName\tSequence\n")
+	faFile := fileio.EasyCreate(outputFilePath + ".fa.gz")
+	defer faFile.Close()
+
+	writeTsv(tsvFile, "Accession\tDataset\tName\tTaxon\tSequence\n")
 
 	decoder := xml.NewDecoder(xmlReader)
+	
 	for {
 		entry, err := uniprot.ParseUniProt(decoder)
 		if err == io.EOF {
@@ -65,9 +69,10 @@ func writeResults(inputFilename, outputFilePath string) error {
 		if err != nil {
 			return err // Return any other errors encountered during parsing
 		}
-		writeTsv(tsvFile, processXml(entry))
-	}
 
+		writeTsv(tsvFile, processXml(entry))
+		writeFasta(faFile, Fasta{Name: entry.Name, Seq: entry.Sequence.Value})
+	}
 	return nil
 }
 
@@ -108,8 +113,10 @@ func worker(jobs <-chan string, suffix string, wg *sync.WaitGroup) {
 
 	for inputFilePath := range jobs {
 		outputFilePath := strings.TrimSuffix(filepath.Base(inputFilePath), suffix)
+		
 		log.Printf("Processing file: %s", inputFilePath)
 		err := writeResults(inputFilePath, outputFilePath)
+		
 		if err != nil {
 			log.Printf("Error processing file %s: %v", inputFilePath, err)
 		}
