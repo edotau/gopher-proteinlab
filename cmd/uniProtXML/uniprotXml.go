@@ -4,7 +4,9 @@ import (
 	"encoding/xml"
 	"io"
 
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -176,29 +178,28 @@ func usage() {
 }
 
 func main() {
-	writeResults("/data/BTD/RESEARCH/Martin_Kyle/Epivax/Databases/Preprocessed/Uniprot/uniprot_sprot_bacteria.xml.gz", "./uniprot_sprot_bacteria.tsv.gz")
-	// // Define command-line flags for the directory and file suffix
-	// directoryPtr := flag.String("dir", "", "Path to the directory containing files")
-	// suffixPtr := flag.String("suffix", ".xml", "File suffix to process (e.g., .xml, .tsv, .txt)")
+	// Define command-line flags for the directory and file suffix
+	directoryPtr := flag.String("dir", "", "Path to the directory containing files")
+	suffixPtr := flag.String("suffix", ".xml", "File suffix to process (e.g., .xml, .tsv, .txt)")
 
-	// // Override the default usage message
-	// flag.Usage = usage
+	// Override the default usage message
+	flag.Usage = usage
 
-	// flag.Parse()
+	flag.Parse()
 
-	// // Check if the directory flag is provided
-	// if *directoryPtr == "" {
-	// 	flag.Usage()
-	// 	log.Fatal("Error: Please provide the directory path using the -dir flag")
-	// }
+	// Check if the directory flag is provided
+	if *directoryPtr == "" {
+		flag.Usage()
+		log.Fatal("Error: Please provide the directory path using the -dir flag")
+	}
 
-	// if *suffixPtr == "" {
-	// 	flag.Usage()
-	// 	log.Fatal("Error: Please provide the suffix string using the -suffix flag")
-	// }
+	if *suffixPtr == "" {
+		flag.Usage()
+		log.Fatal("Error: Please provide the suffix string using the -suffix flag")
+	}
 
-	// // Process the directory and handle any errors
-	// if err := processDirectory(*directoryPtr, *suffixPtr); err != nil {
-	// 	log.Fatalf("Error: %v", err)
-	// }
+	// Process the directory and handle any errors
+	if err := processDirectory(*directoryPtr, *suffixPtr); err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 }
