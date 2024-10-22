@@ -86,7 +86,5 @@ func (e GenBankEntry) ToString() string {
 
 // writeField is a helper function to write a label and its corresponding value to a string builder.
 func writeField(buffer *strings.Builder, label, value string) {
-	parseio.HandleStrBuilder(buffer, label)
-	parseio.HandleStrBuilder(buffer, value)
-	parseio.ExitOnError(buffer.WriteByte('\n'))
+	parseio.NewTxtBuilder().WriteTag(label, value)
 }

@@ -5,13 +5,20 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/klauspost/pgzip"
 )
 
-// CodeReader struct wraps around bufio.Reader while handling gzzip files as well.
+// CodeReader struct wraps around bufio.Reader while handling gzipping files as well.
 type CodeReader struct {
 	*bufio.Reader
+	close func() error
+}
+
+// CodeReader struct wraps around bufio.Writer while handling gzipping files as well.
+type CodeWriter struct {
+	io.Writer
 	close func() error
 }
 
@@ -73,6 +80,18 @@ func NewScanner(filename string) *Scanalyzer {
 		Scanner: bufio.NewScanner(reader),
 		close:   file.Close,
 	}
+}
+
+func NewWriter(filename string) *CodeWriter {
+	ans := CodeWriter{}
+	file, err := os.Create(filename)
+	ExitOnError(err)
+	ans.Writer = bufio.NewWriter(file)
+
+	if strings.HasSuffix(filename, ".gz") {
+		ans.Writer = pgzip.NewWriter(ans.Writer)
+	}
+	return &ans
 }
 
 // Read implements io.Reader, reading data into b from the file or gzip stream.
