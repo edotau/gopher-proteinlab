@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"io"
 
 	"flag"
 	"fmt"
@@ -54,8 +55,14 @@ func writeResults(inputFilename, outputFilePath string) error {
 	writeTsv(tsvFile, "Accession\tDataset\tName\tSequence\n")
 	
 	decoder := xml.NewDecoder(xmlReader)
-	for entry, err := uniprot.ParseUniProt(decoder); parseio.CatchEofErr(err); entry, err = uniprot.ParseUniProt(decoder){
+	for {
+		// Parse each entry and process it
+		entry, err := uniprot.ParseUniProt(decoder)
+		if err == io.EOF {
+			break // End of file reached
+		}
 		writeTsv(tsvFile, processXml(entry))
+		parseio.ExitOnError(err)
 	}
 	
 	writeTsv(tsvFile, "\n")
